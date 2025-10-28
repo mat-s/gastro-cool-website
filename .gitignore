@@ -1,0 +1,46 @@
+# ─────────────────────────────
+# Composer & PHP
+# ─────────────────────────────
+/vendor/
+composer.lock
+
+# ─────────────────────────────
+# Node & Frontend
+# ─────────────────────────────
+/node_modules/
+package-lock.json
+*.log
+*.tmp
+
+# ─────────────────────────────
+# WordPress Core (via Composer)
+/wp/
+
+# ─────────────────────────────
+# WordPress Content
+/wp-content/uploads/
+/wp-content/uploads/sites/
+/wp-content/cache/
+/wp-content/upgrade/
+/wp-content/languages/
+/wp-content/mu-plugins/
+/wp-content/plugins/*
+!/wp-content/plugins/.gitkeep
+/wp-content/themes/*
+!/wp-content/themes/gastro-cool-theme/
+
+# ─────────────────────────────
+# System & IDE
+# ─────────────────────────────
+.DS_Store
+Thumbs.db
+.env
+.env.*
+.idea/
+.vscode/
+
+# ─────────────────────────────
+# Docker-Spezifisch (falls verwendet)
+/mysql-init/
+.htaccess
+uploads.ini

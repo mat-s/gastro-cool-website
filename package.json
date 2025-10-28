@@ -1,0 +1,41 @@
+{
+  "name": "top10list-wordpress-project",
+  "version": "1.0.0",
+  "description": "Modern WordPress project with Top10List theme, built with SCSS and Vanilla JavaScript",
+  "scripts": {
+    "build": "gulp build",
+    "build:prod": "gulp build:prod",
+    "watch": "gulp watch",
+    "dev": "gulp default",
+    "scss": "gulp scss",
+    "scss:prod": "gulp scss:prod",
+    "js": "gulp js",
+    "server": "gulp server",
+    "test:scss": "gulp test:scss",
+    "test:build": "gulp test:build",
+    "lint:css": "stylelint 'wp-content/themes/top10list-theme/assets/scss/**/*.scss'",
+    "lint:php": "phpcs --standard=WordPress wp-content/themes/top10list-theme/",
+    "format:css": "prettier --write 'wp-content/themes/top10list-theme/assets/scss/**/*.scss'",
+    "format:php": "phpcbf --standard=WordPress wp-content/themes/top10list-theme/",
+    "setup": "npm install && npm run build"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.19",
+    "browser-sync": "^3.0.4",
+    "gulp": "^5.0.1",
+    "gulp-clean-css": "^4.3.0",
+    "gulp-header": "^2.0.9",
+    "gulp-rename": "^2.1.0",
+    "gulp-sass": "^6.0.1",
+    "gulp-sourcemaps": "^3.0.0",
+    "postcss": "^8.4.0",
+    "prettier": "^3.0.0",
+    "sass": "^1.90.0",
+    "stylelint": "^15.10.0",
+    "stylelint-config-prettier-scss": "^1.0.0",
+    "stylelint-config-standard-scss": "^10.0.0"
+  },
+  "dependencies": {
+    "normalize.css": "^8.0.1"
+  }
+}
