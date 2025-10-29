@@ -5,14 +5,9 @@ body {
   font-size: v.$font-size-base;
   line-height: v.$line-height-base;
   color: v.$color-text;
-  background: red;
 }
 
 a { color: v.$color-primary; text-decoration: none; }
 a:hover { text-decoration: underline; }
 
 ::selection { background: rgba(v.$color-primary, 0.2); }
-
-.ast-builder-grid-row {
-  background-color: green;
-}
