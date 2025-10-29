@@ -1,7 +1,7 @@
 {
-  "name": "top10list-wordpress-project",
+  "name": "gastro-cool-wordpress-project",
   "version": "1.0.0",
-  "description": "Modern WordPress project with Top10List theme, built with SCSS and Vanilla JavaScript",
+  "description": "WordPress project with Gastro-Cool Astra child theme, built with SCSS and Gulp",
   "scripts": {
     "build": "gulp build",
     "build:prod": "gulp build:prod",
@@ -13,10 +13,10 @@
     "server": "gulp server",
     "test:scss": "gulp test:scss",
     "test:build": "gulp test:build",
-    "lint:css": "stylelint 'wp-content/themes/top10list-theme/assets/scss/**/*.scss'",
-    "lint:php": "phpcs --standard=WordPress wp-content/themes/top10list-theme/",
-    "format:css": "prettier --write 'wp-content/themes/top10list-theme/assets/scss/**/*.scss'",
-    "format:php": "phpcbf --standard=WordPress wp-content/themes/top10list-theme/",
+    "lint:css": "stylelint 'wp-content/themes/gastro-cool-theme/assets/scss/**/*.scss'",
+    "lint:php": "phpcs --standard=WordPress wp-content/themes/gastro-cool-theme/",
+    "format:css": "prettier --write 'wp-content/themes/gastro-cool-theme/assets/scss/**/*.scss'",
+    "format:php": "phpcbf --standard=WordPress wp-content/themes/gastro-cool-theme/",
     "setup": "npm install && npm run build"
   },
   "devDependencies": {

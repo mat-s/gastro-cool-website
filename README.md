@@ -1,7 +1,7 @@
-# Top10List WordPress Projekt
+# Gastro-Cool WordPress Projekt
 
-Modernes WordPress-Setup für lokale Entwicklung mit Docker, Composer und Gulp.  
-Enthält ein eigenes Theme (`top10list-theme`) auf Basis von SCSS und Vanilla JavaScript.
+Modernes WordPress-Setup für lokale Entwicklung mit Docker und Gulp.  
+Enthält ein eigenes Astra-Child-Theme (`gastro-cool-theme`) mit SCSS-Struktur.
 
 ---
 
@@ -54,12 +54,12 @@ Enthält ein eigenes Theme (`top10list-theme`) auf Basis von SCSS und Vanilla Ja
 
 ## Theme-Entwicklung
 
-- Das eigene Theme liegt unter:  
-  `wp-content/themes/top10list-theme/`
+- Child-Theme liegt unter:  
+  `wp-content/themes/gastro-cool-theme/`
 - Haupt-SCSS-Datei:  
-  `wp-content/themes/top10list-theme/assets/scss/style.scss`
-- Kompilierte CSS/JS-Dateien landen in:  
-  `wp-content/themes/top10list-theme/dist/`
+  `wp-content/themes/gastro-cool-theme/assets/scss/main.scss`
+- Kompiliertes CSS landet in:  
+  `wp-content/themes/gastro-cool-theme/style.css`
 
 ---
 
@@ -70,6 +70,8 @@ Enthält ein eigenes Theme (`top10list-theme`) auf Basis von SCSS und Vanilla Ja
 | `npm run dev`         | Entwicklungsmodus mit Watch & Live-Reload    |
 | `npm run build`       | Einmaliger Build (Entwicklung)               |
 | `npm run build:prod`  | Build für Produktion (minifiziert)           |
+| `npm run scss`        | SCSS Build (style.css im Theme-Root)         |
+| `npm run watch`       | Watch + Live-Reload                          |
 | `npm run lint:css`    | SCSS-Code-Qualität prüfen                    |
 | `npm run format:css`  | SCSS-Code formatieren                        |
 | `npm run lint:php`    | PHP-Code-Qualität prüfen (WordPress-Standard)|

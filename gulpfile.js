@@ -8,30 +8,48 @@ const sourcemaps = require('gulp-sourcemaps');
 
 // WordPress Theme Header für CSS
 const themeHeader = `/*
-Theme Name: Top10List Theme
-Description: Modern custom theme for Top10List website, built on Elementor Hello-Theme with SCSS
+Theme Name: Gastro Cool Theme
+Description: Astra Child Theme for Gastro-Cool, built with SCSS and Gulp
 Author: Matthias Seidel
-Author URI: https://top10lists.example
+Author URI: https://gastro-cool.de
 Version: 1.0.0
-Template: hello-elementor
-Text Domain: top10list-theme
+Template: astra
+Text Domain: gastro-cool-theme
 */
 
 `;
 
-// Pfade definieren
+// Pfade definieren (Gastro-Cool Theme)
 const paths = {
   scss: {
-    src: 'wp-content/themes/top10list-theme/assets/scss/**/*.scss',
-    main: 'wp-content/themes/top10list-theme/assets/scss/style.scss',
-    dest: 'wp-content/themes/top10list-theme/dist/'
+    src: 'wp-content/themes/gastro-cool-theme/assets/scss/**/*.scss',
+    main: 'wp-content/themes/gastro-cool-theme/assets/scss/main.scss',
+    // style.css soll klassisch im Theme-Root liegen
+    dest: 'wp-content/themes/gastro-cool-theme/'
   },
   js: {
-    src: 'wp-content/themes/top10list-theme/assets/js/**/*.js',
-    dest: 'wp-content/themes/top10list-theme/dist/'
+    src: 'wp-content/themes/gastro-cool-theme/assets/js/**/*.js',
+    dest: 'wp-content/themes/gastro-cool-theme/assets/js/'
   },
   php: {
-    src: 'wp-content/themes/top10list-theme/**/*.php'
+    src: 'wp-content/themes/gastro-cool-theme/**/*.php'
+  }
+};
+
+// Zusätzliche Pfade: gastro-cool-theme (Child-Theme auf Astra)
+const gastroPaths = {
+  scss: {
+    src: 'wp-content/themes/gastro-cool-theme/assets/scss/**/*.scss',
+    main: 'wp-content/themes/gastro-cool-theme/assets/scss/main.scss',
+    dest: 'wp-content/themes/gastro-cool-theme/assets/css/',
+    outFile: 'theme.css'
+  },
+  js: {
+    src: 'wp-content/themes/gastro-cool-theme/assets/js/**/*.js',
+    dest: 'wp-content/themes/gastro-cool-theme/assets/js/'
+  },
+  php: {
+    src: 'wp-content/themes/gastro-cool-theme/**/*.php'
   }
 };
 
@@ -44,6 +62,7 @@ function compileSCSS() {
       includePaths: ['node_modules']
     }).on('error', sass.logError))
     .pipe(header(themeHeader))
+    .pipe(rename('style.css'))
     .pipe(sourcemaps.write('.'))
     .pipe(gulp.dest(paths.scss.dest))
     .pipe(browserSync.stream());
@@ -58,7 +77,7 @@ function compileSCSSProd() {
     }).on('error', sass.logError))
     .pipe(cleanCSS({ level: 2 }))
     .pipe(header(themeHeader))
-    .pipe(rename({ suffix: '.min' }))
+    .pipe(rename('style.css'))
     .pipe(gulp.dest(paths.scss.dest));
 }
 
@@ -119,3 +138,5 @@ gulp.task('test:build', (done) => {
   // Hier könnten Build-Tests integriert werden
   done();
 });
+
+// Entfernt: separate Gastro-Tasks – der Standard-SCSS-Task baut jetzt direkt style.css im Theme-Root

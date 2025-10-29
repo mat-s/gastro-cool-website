@@ -3,25 +3,17 @@
  * Funktionen für das Astra Child Theme "Gastro Cool Theme".
  */
 
-// Parent- und Child-Styles korrekt laden
+// Astra lädt das Parent-CSS bereits selbst. Wir hängen nur das Child-CSS an.
 add_action( 'wp_enqueue_scripts', 'gastro_cool_enqueue_styles', 15 );
 function gastro_cool_enqueue_styles() {
-    $parent_handle = 'astra-parent-style';
-
-    // Parent-Stylesheet (Astra)
-    wp_enqueue_style(
-        $parent_handle,
-        get_template_directory_uri() . '/style.css',
-        array(),
-        function_exists( 'wp_get_theme' ) ? wp_get_theme( 'astra' )->get( 'Version' ) : null
-    );
-
-    // Child-Stylesheet
+    $style_path = get_stylesheet_directory() . '/style.css';
     wp_enqueue_style(
         'gastro-cool-style',
-        get_stylesheet_directory_uri() . '/style.css',
-        array( $parent_handle ),
-        function_exists( 'wp_get_theme' ) ? wp_get_theme()->get( 'Version' ) : null
+        get_stylesheet_uri(),
+        array( 'astra-theme-css' ),
+        file_exists( $style_path ) ? filemtime( $style_path ) : null
     );
 }
 
+// Theme-Setup auslagern
+require_once get_stylesheet_directory() . '/inc/setup.php';
