@@ -68,6 +68,10 @@ a:hover {
   }
 }
 
+.gc-header__icons {
+  width: auto;
+}
+
 .u-muted {
   color: #6b7280;
 }
