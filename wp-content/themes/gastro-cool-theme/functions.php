@@ -17,6 +17,8 @@ function gastro_cool_enqueue_styles() {
 
 // Load theme setup
 require_once get_stylesheet_directory() . '/inc/setup.php';
+// Disable comments and emojis
+require_once get_stylesheet_directory() . '/inc/disable-comments-and-emojis.php';
 
 /**
  * Allow SVG uploads (with proper MIME/ext detection).
