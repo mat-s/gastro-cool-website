@@ -72,6 +72,15 @@ a:hover {
   width: auto;
 }
 
+.gc-footer__menu ul .menu-item .menu-link {
+  justify-content: center;
+}
+@media (min-width: 768px) {
+  .gc-footer__menu ul .menu-item .menu-link {
+    justify-content: flex-start;
+  }
+}
+
 .u-muted {
   color: #6b7280;
 }

@@ -1,0 +1,16 @@
+@use '../variables' as v;
+@use '../mixins' as m;
+
+.gc-footer {
+  &__menu {
+    ul .menu-item {
+      .menu-link {
+        justify-content: center;
+
+        @include m.up(m.$bp-md) {
+          justify-content: flex-start;
+        }
+      }
+    }
+  }
+}
