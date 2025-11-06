@@ -10,7 +10,7 @@ function gastro_cool_enqueue_styles() {
     wp_enqueue_style(
         'gastro-cool-style',
         get_stylesheet_uri(),
-        array( 'astra-theme-css' ),
+        [ 'astra-theme-css' ],
         file_exists( $style_path ) ? filemtime( $style_path ) : null
     );
 }
@@ -19,6 +19,17 @@ function gastro_cool_enqueue_styles() {
 require_once get_stylesheet_directory() . '/inc/setup.php';
 // Disable comments and emojis
 require_once get_stylesheet_directory() . '/inc/disable-comments-and-emojis.php';
+// Navigation and menu-related filters
+require_once get_stylesheet_directory() . '/inc/navigation.php';
+
+// Register custom Elementor widgets via a Widget Manager (if Elementor is active)
+// Load and bootstrap the widget manager; hooks inside will run when Elementor fires
+add_action( 'after_setup_theme', function() {
+    require_once get_stylesheet_directory() . '/widgets/WidgetManager.php';
+    if ( class_exists( 'GastroCoolTheme\\Widgets\\WidgetManager' ) ) {
+        new GastroCoolTheme\Widgets\WidgetManager();
+    }
+} );
 
 /**
  * Allow SVG uploads (with proper MIME/ext detection).
@@ -35,7 +46,7 @@ add_filter( 'upload_mimes', function( $mimes ) {
 add_filter( 'wp_check_filetype_and_ext', function( $data, $file, $filename, $mimes ) {
     $filetype = wp_check_filetype( $filename, $mimes );
 
-    if ( in_array( $filetype['ext'], array( 'svg', 'svgz' ), true ) ) {
+    if ( in_array( $filetype['ext'], [ 'svg', 'svgz' ], true ) ) {
         $data['ext']  = $filetype['ext'];
         $data['type'] = 'image/svg+xml';
     }
@@ -53,3 +64,4 @@ add_action( 'admin_head', function() {
         }
     </style>';
 } );
+
