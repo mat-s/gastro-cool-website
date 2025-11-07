@@ -1,0 +1,20 @@
+<?xml version=1.0 encoding=UTF-8?>
+<wpml-config>
+  <custom-types>
+    <custom-type translate=1>product</custom-type>
+  </custom-types>
+  <!--
+    Add taxonomies and custom-fields here when introduced.
+    Example:
+    <taxonomies>
+      <taxonomy translate=1>product_category</taxonomy>
+      <taxonomy translate=1>brand</taxonomy>
+    </taxonomies>
+    <custom-fields>
+      <custom-field action=copy>external_id</custom-field>
+      <custom-field action=copy>gtin</custom-field>
+      <custom-field action=copy>price_amount</custom-field>
+      <custom-field action=copy>price_currency</custom-field>
+    </custom-fields>
+  -->
+</wpml-config>
