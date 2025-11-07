@@ -3,6 +3,14 @@
   <custom-types>
     <custom-type translate=1>product</custom-type>
   </custom-types>
+  <taxonomies>
+    <taxonomy translate=1>product_category</taxonomy>
+    <taxonomy translate=1>industry</taxonomy>
+    <taxonomy translate=1>brand</taxonomy>
+    <taxonomy translate=1>product_group</taxonomy>
+    <taxonomy translate=1>color</taxonomy>
+    <taxonomy translate=1>certification</taxonomy>
+  </taxonomies>
   <!--
     Add taxonomies and custom-fields here when introduced.
     Example:

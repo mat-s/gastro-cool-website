@@ -62,6 +62,91 @@ function gcp_register_post_type()
 }
 add_action('init', 'gcp_register_post_type', 5);
 
+/**
+ * Register custom taxonomies for Products.
+ */
+function gcp_register_taxonomies()
+{
+  // Hierarchical product categories (from feed path starting with Products > ...)
+  register_taxonomy('product_category', ['product'], [
+    'labels' => [
+      'name' => __('Product Categories', 'gastro-cool-products'),
+      'singular_name' => __('Product Category', 'gastro-cool-products'),
+    ],
+    'hierarchical' => true,
+    'show_ui' => true,
+    'show_in_rest' => true,
+    'public' => true,
+    'rewrite' => ['slug' => 'product-category', 'with_front' => false],
+  ]);
+
+  // Hierarchical industries (from feed path starting with Industry > ...)
+  register_taxonomy('industry', ['product'], [
+    'labels' => [
+      'name' => __('Industries', 'gastro-cool-products'),
+      'singular_name' => __('Industry', 'gastro-cool-products'),
+    ],
+    'hierarchical' => true,
+    'show_ui' => true,
+    'show_in_rest' => true,
+    'public' => true,
+    'rewrite' => ['slug' => 'industry', 'with_front' => false],
+  ]);
+
+  // Flat brand taxonomy
+  register_taxonomy('brand', ['product'], [
+    'labels' => [
+      'name' => __('Brands', 'gastro-cool-products'),
+      'singular_name' => __('Brand', 'gastro-cool-products'),
+    ],
+    'hierarchical' => false,
+    'show_ui' => true,
+    'show_in_rest' => true,
+    'public' => true,
+    'rewrite' => ['slug' => 'brand', 'with_front' => false],
+  ]);
+
+  // Flat product group taxonomy (from g:cust_product_group)
+  register_taxonomy('product_group', ['product'], [
+    'labels' => [
+      'name' => __('Product Groups', 'gastro-cool-products'),
+      'singular_name' => __('Product Group', 'gastro-cool-products'),
+    ],
+    'hierarchical' => false,
+    'show_ui' => true,
+    'show_in_rest' => true,
+    'public' => true,
+    'rewrite' => ['slug' => 'product-group', 'with_front' => false],
+  ]);
+
+  // Flat color taxonomy (from g:color)
+  register_taxonomy('color', ['product'], [
+    'labels' => [
+      'name' => __('Colors', 'gastro-cool-products'),
+      'singular_name' => __('Color', 'gastro-cool-products'),
+    ],
+    'hierarchical' => false,
+    'show_ui' => true,
+    'show_in_rest' => true,
+    'public' => true,
+    'rewrite' => ['slug' => 'product-color', 'with_front' => false],
+  ]);
+
+  // Hierarchical certification taxonomy (Authority > Name). Code stored as term meta later.
+  register_taxonomy('certification', ['product'], [
+    'labels' => [
+      'name' => __('Certifications', 'gastro-cool-products'),
+      'singular_name' => __('Certification', 'gastro-cool-products'),
+    ],
+    'hierarchical' => true,
+    'show_ui' => true,
+    'show_in_rest' => true,
+    'public' => true,
+    'rewrite' => ['slug' => 'certification', 'with_front' => false],
+  ]);
+}
+add_action('init', 'gcp_register_taxonomies', 6);
+
 // Activation/Deactivation: multisite-safe
 function gcp_activate_per_site()
 {
