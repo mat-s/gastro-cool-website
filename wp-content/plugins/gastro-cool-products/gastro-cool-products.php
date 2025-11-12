@@ -191,3 +191,26 @@ function gcp_deactivate($network_wide)
   }
 }
 register_deactivation_hook(__FILE__, 'gcp_deactivate');
+
+// Load ACF field groups (if ACF is active)
+add_action('plugins_loaded', function () {
+  if (function_exists('acf_add_local_field_group')) {
+    require_once GCP_PLUGIN_DIR . 'includes/acf-fields.php';
+  }
+  // Importer is independent of ACF presence (falls back to post meta)
+  require_once GCP_PLUGIN_DIR . 'includes/importer.php';
+  if (is_admin()) {
+    require_once GCP_PLUGIN_DIR . 'includes/admin-import.php';
+    require_once GCP_PLUGIN_DIR . 'includes/admin-columns.php';
+  }
+});
+
+// Allow XML uploads for admins (needed for the Odoo XML import)
+add_filter('upload_mimes', function ($mimes) {
+  if (current_user_can('manage_options')) {
+    $mimes['xml']  = 'text/xml';
+    $mimes['rss']  = 'application/rss+xml';
+    $mimes['atom'] = 'application/atom+xml';
+  }
+  return $mimes;
+});

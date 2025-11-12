@@ -1,16 +1,44 @@
-<?xml version=1.0 encoding=UTF-8?>
+<?xml version="1.0" encoding="UTF-8"?>
 <wpml-config>
   <custom-types>
-    <custom-type translate=1>product</custom-type>
+    <custom-type translate="1">product</custom-type>
   </custom-types>
   <taxonomies>
-    <taxonomy translate=1>product_category</taxonomy>
-    <taxonomy translate=1>industry</taxonomy>
-    <taxonomy translate=1>brand</taxonomy>
-    <taxonomy translate=1>product_group</taxonomy>
-    <taxonomy translate=1>color</taxonomy>
-    <taxonomy translate=1>certification</taxonomy>
+    <taxonomy translate="1">product_category</taxonomy>
+    <taxonomy translate="1">industry</taxonomy>
+    <taxonomy translate="1">brand</taxonomy>
+    <taxonomy translate="1">product_group</taxonomy>
+    <taxonomy translate="1">color</taxonomy>
+    <taxonomy translate="1">certification</taxonomy>
   </taxonomies>
+  <custom-fields>
+    <custom-field action="copy">external_id</custom-field>
+    <custom-field action="copy">gtin</custom-field>
+    <custom-field action="copy">stock</custom-field>
+    <custom-field action="copy">availability</custom-field>
+    <custom-field action="copy">refill_time</custom-field>
+    <custom-field action="copy">price_amount</custom-field>
+    <custom-field action="copy">price_currency</custom-field>
+    <custom-field action="copy">price_raw</custom-field>
+    <custom-field action="copy">shipping_weight_kg</custom-field>
+    <custom-field action="copy">length_cm</custom-field>
+    <custom-field action="copy">width_cm</custom-field>
+    <custom-field action="copy">height_cm</custom-field>
+    <custom-field action="copy">pallet_size</custom-field>
+    <custom-field action="copy">warehouse</custom-field>
+    <custom-field action="copy">google_active</custom-field>
+    <custom-field action="copy">google_cat</custom-field>
+    <custom-field action="copy">google_available_date</custom-field>
+    <custom-field action="copy">shipping_price_1</custom-field>
+    <custom-field action="copy">shipping_price_2</custom-field>
+    <custom-field action="copy">shipping_price_3</custom-field>
+    <custom-field action="copy">shipping_price_4</custom-field>
+    <custom-field action="copy">shipping_price_5</custom-field>
+    <custom-field action="copy">featured_image_source_url</custom-field>
+    <custom-field action="copy">additional_image_links</custom-field>
+    <!-- Term meta on certification taxonomy -->
+    <custom-field action="copy">cert_code</custom-field>
+  </custom-fields>
   <!--
     Add taxonomies and custom-fields here when introduced.
     Example:
@@ -19,10 +47,10 @@
       <taxonomy translate=1>brand</taxonomy>
     </taxonomies>
     <custom-fields>
-      <custom-field action=copy>external_id</custom-field>
-      <custom-field action=copy>gtin</custom-field>
-      <custom-field action=copy>price_amount</custom-field>
-      <custom-field action=copy>price_currency</custom-field>
+      <custom-field action="copy">external_id</custom-field>
+      <custom-field action="copy">gtin</custom-field>
+      <custom-field action="copy">price_amount</custom-field>
+      <custom-field action="copy">price_currency</custom-field>
     </custom-fields>
   -->
 </wpml-config>
