@@ -153,7 +153,22 @@ function gcp_assign_certification($post_id, $authority, $name, $code){
 }
 
 function gcp_update_field_safe($name, $value, $post_id){
-  if (function_exists('update_field')){ update_field($name, $value, $post_id); }
+  // Use field keys for grouped fields so storage remains correct after grouping
+  $key_map = [
+    'stock' => 'field_stock',
+    'availability' => 'field_availability',
+    'refill_time' => 'field_refill_time',
+    'price_amount' => 'field_price_amount',
+    'price_currency' => 'field_price_currency',
+    'price_raw' => 'field_price_raw',
+  ];
+  if (function_exists('update_field')){
+    if (isset($key_map[$name])) {
+      update_field($key_map[$name], $value, $post_id);
+    } else {
+      update_field($name, $value, $post_id);
+    }
+  }
   else { update_post_meta($post_id, $name, $value); }
 }
 
