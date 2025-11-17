@@ -203,6 +203,14 @@ add_action('plugins_loaded', function () {
     require_once GCP_PLUGIN_DIR . 'includes/admin-import.php';
     require_once GCP_PLUGIN_DIR . 'includes/admin-columns.php';
   }
+  // Elementor Skin: load after Elementor Pro initializes to avoid early autoload issues
+  add_action('elementor_pro/init', function() {
+    require_once GCP_PLUGIN_DIR . 'elementor-skins/products-grid.php';
+  });
+  // Enqueue skin styles on frontend
+  add_action('wp_enqueue_scripts', function(){
+    wp_enqueue_style('gcp-products-grid', plugins_url('assets/css/products-grid.css', __FILE__), [], GCP_VERSION);
+  });
 });
 
 // Allow XML uploads for admins (needed for the Odoo XML import)
