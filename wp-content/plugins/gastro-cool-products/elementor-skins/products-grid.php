@@ -37,11 +37,13 @@ class Products_Grid_Skin extends Skin_Base
       }
     }
 
-    // Optional corner badge (e.g., energy label)
+    // Optional corner badge (Energy Button HTML from ACF)
     $corner_badge = '';
-    $energy = function_exists('get_field') ? (string) get_field('energy_label', $post_id) : '';
-    if ($energy !== '') {
-      $corner_badge = '<span class="gcp-card__corner-badge" title="' . esc_attr__('Energy Label', 'gastro-cool-products') . '">' . esc_html($energy) . '</span>';
+    $energy_html = function_exists('get_field') ? (string) get_field('energy_button_html', $post_id) : '';
+    if ($energy_html !== '') {
+      // Field already contains full HTML (e.g. <div class="energybutton"><img .../></div>)
+      // Wrap in a minimal container for positioning in the card corner.
+      $corner_badge = '<div class="gcp-card__corner-badge">' . wp_kses_post($energy_html) . '</div>';
     }
 
     // Badges repeater (ACF)
@@ -83,4 +85,3 @@ add_action('elementor/widget/posts/skins_init', function($widget){
   if (! $widget || ! method_exists($widget, 'add_skin')) { return; }
   $widget->add_skin( new Products_Grid_Skin( $widget ) );
 });
-
