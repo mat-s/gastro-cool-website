@@ -1,0 +1,18 @@
+@use '../variables' as v;
+@use '../mixins' as m;
+
+.product-template-default .site-content > .ast-container {
+  max-width: 100%;
+  padding: 0;
+  background-color: blue;
+}
+
+.product-template-default .site .site-content #primary {
+  padding: 0;
+  margin: 0;
+}
+
+.product-template-default .site .site-content .ast-article-single {
+  padding: 0;
+  margin: 0;
+}
