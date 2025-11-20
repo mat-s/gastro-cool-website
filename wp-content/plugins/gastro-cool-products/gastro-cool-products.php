@@ -207,6 +207,14 @@ add_action('plugins_loaded', function () {
   add_action('elementor_pro/init', function() {
     require_once GCP_PLUGIN_DIR . 'elementor-skins/products-grid.php';
   });
+  // Elementor widget: Inquiry button
+  add_action('elementor/widgets/register', function($widgets_manager) {
+    if (! class_exists('\Elementor\Widget_Base')) {
+      return;
+    }
+    require_once GCP_PLUGIN_DIR . 'elementor-widgets/inquiry-button.php';
+    $widgets_manager->register( new \GCP\Elementor\Widgets\Inquiry_Button_Widget() );
+  });
   // Enqueue skin styles and inquiry script on frontend
   add_action('wp_enqueue_scripts', function(){
     wp_enqueue_style(
@@ -223,6 +231,44 @@ add_action('plugins_loaded', function () {
       GCP_VERSION,
       true
     );
+
+    wp_enqueue_script(
+      'gcp-inquiry-overlay',
+      plugins_url('assets/js/inquiry-overlay.js', __FILE__),
+      ['gcp-inquiry'],
+      GCP_VERSION,
+      true
+    );
+
+    wp_enqueue_script(
+      'gcp-inquiry-badge',
+      plugins_url('assets/js/inquiry-badge.js', __FILE__),
+      ['gcp-inquiry'],
+      GCP_VERSION,
+      true
+    );
+  });
+
+  // Render inquiry overlay markup in footer
+  add_action('wp_footer', function () {
+    ?>
+    <div class="gc-inquiry-overlay" aria-hidden="true">
+      <aside class="gc-inquiry-overlay__panel" role="dialog" aria-modal="true" aria-labelledby="gc-inquiry-overlay-title">
+        <header class="gc-inquiry-overlay__header">
+          <div id="gc-inquiry-overlay-title"><?php echo esc_html__('Ihre Anfrage', 'gastro-cool-products'); ?></div>
+          <button type="button" class="gc-inquiry-overlay__close" aria-label="<?php echo esc_attr__('Overlay schließen', 'gastro-cool-products'); ?>">×</button>
+        </header>
+        <div class="gc-inquiry-overlay__body">
+          <div class="gc-inquiry-overlay__empty"><?php echo esc_html__('Ihre Merkliste ist derzeit leer.', 'gastro-cool-products'); ?></div>
+          <ul class="gc-inquiry-overlay__list"></ul>
+        </div>
+        <footer class="gc-inquiry-overlay__footer">
+          <button type="button" class="gc-inquiry-overlay__clear"><?php echo esc_html__('Liste leeren', 'gastro-cool-products'); ?></button>
+          <a class="gc-inquiry-overlay__submit" href="<?php echo esc_url('/anfrage'); ?>"><?php echo esc_html__('Zur Anfrage fortfahren', 'gastro-cool-products'); ?></a>
+        </footer>
+      </aside>
+    </div>
+    <?php
   });
 });
 
