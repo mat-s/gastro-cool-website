@@ -63,7 +63,22 @@ class Products_Grid_Skin extends Skin_Base
 
     // Buttons
     $details = '<a class="gcp-btn gcp-btn--primary" href="' . esc_url($permalink) . '">' . esc_html__('Details', 'gastro-cool-products') . '</a>';
-    $consult = '<a class="gcp-btn gcp-btn--ghost gcp-consult-btn" href="#" data-product-id="' . esc_attr($post_id) . '">' . esc_html__('Für Beratung vormerken', 'gastro-cool-products') . '</a>';
+
+    $image_url = '';
+    if (has_post_thumbnail($post_id)) {
+      $image_url = get_the_post_thumbnail_url($post_id, 'large') ?: '';
+    } else {
+      $image_url = function_exists('get_field') ? (string) get_field('featured_image_source_url', $post_id) : '';
+    }
+
+    $consult = sprintf(
+      '<button type="button" class="gcp-btn gcp-btn--ghost gcp-consult-btn" data-gc-inquiry-button="1" data-product-id="%1$s" data-product-title="%2$s" data-product-image="%3$s" data-product-url="%4$s">%5$s</button>',
+      esc_attr($post_id),
+      esc_attr($title),
+      esc_url($image_url),
+      esc_url($permalink),
+      esc_html__('Für Beratung vormerken', 'gastro-cool-products')
+    );
 
     echo '<article class="gcp-card">';
     echo '  <div class="gcp-card__media">';

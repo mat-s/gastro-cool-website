@@ -207,9 +207,22 @@ add_action('plugins_loaded', function () {
   add_action('elementor_pro/init', function() {
     require_once GCP_PLUGIN_DIR . 'elementor-skins/products-grid.php';
   });
-  // Enqueue skin styles on frontend (compiled via SCSS to assets/css/products-grid.css)
+  // Enqueue skin styles and inquiry script on frontend
   add_action('wp_enqueue_scripts', function(){
-    wp_enqueue_style('gcp-products-grid', plugins_url('assets/css/products-grid.css', __FILE__), [], GCP_VERSION);
+    wp_enqueue_style(
+      'gcp-products-grid',
+      plugins_url('assets/css/products-grid.css', __FILE__),
+      [],
+      GCP_VERSION
+    );
+
+    wp_enqueue_script(
+      'gcp-inquiry',
+      plugins_url('assets/js/inquiry.js', __FILE__),
+      [],
+      GCP_VERSION,
+      true
+    );
   });
 });
 
