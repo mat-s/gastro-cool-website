@@ -179,15 +179,21 @@ body.gc-inquiry-overlay-open {
   font-size: 14px;
   font-weight: 600;
   color: #111827;
+  box-shadow: none;
 
   &__icon-wrap {
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    line-height: 1;
   }
 
   &__icon {
     font-size: 16px;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
   }
 
   &__label {

@@ -37,13 +37,37 @@ class Inquiry_Button_Widget extends Widget_Base
     );
 
     $this->add_control(
-      'button_icon',
-      [
-        'label' => __('Icon', 'gastro-cool-products'),
-        'type' => Controls_Manager::ICONS,
+				'button_icon',
+				[
+					'label' => __('Icon', 'gastro-cool-products'),
+					'type' => Controls_Manager::ICONS,
+					'fa4compatibility' => 'icon',
+					'skin' => 'inline',
+					'label_block' => false,
         'default' => [
           'value' => 'eicon-editor-list-ul',
           'library' => 'eicons',
+        ],
+				]
+			);
+
+    $this->add_responsive_control(
+      'icon_size',
+      [
+        'label' => __('Icon Size', 'gastro-cool-products'),
+        'type' => Controls_Manager::SLIDER,
+        'size_units' => ['px', 'em', 'rem'],
+        'range' => [
+          'px' => ['min' => 8, 'max' => 48],
+          'em' => ['min' => 0.5, 'max' => 3],
+          'rem' => ['min' => 0.5, 'max' => 3],
+        ],
+        'default' => [
+          'unit' => 'px',
+          'size' => 16,
+        ],
+        'selectors' => [
+          '{{WRAPPER}} .gc-inquiry-button__icon, {{WRAPPER}} .gc-inquiry-button__icon svg, {{WRAPPER}} .gc-inquiry-button__icon i' => 'width: {{SIZE}}{{UNIT}}; height: {{SIZE}}{{UNIT}}; font-size: {{SIZE}}{{UNIT}};',
         ],
       ]
     );
@@ -105,4 +129,3 @@ class Inquiry_Button_Widget extends Widget_Base
     echo '</button>';
   }
 }
-
