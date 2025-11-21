@@ -192,6 +192,116 @@ function gcp_deactivate($network_wide)
 }
 register_deactivation_hook(__FILE__, 'gcp_deactivate');
 
+/**
+ * Get the configured inquiry page URL.
+ *
+ * @return string Inquiry page permalink or a sensible fallback.
+ */
+function gc_get_inquiry_page_url()
+{
+  $page_id = (int) get_option('gc_inquiry_page_id');
+  if ($page_id > 0) {
+    $url = get_permalink($page_id);
+    if ($url) {
+      return $url;
+    }
+  }
+
+  // Fallback: try a page with slug "anfrage", otherwise site home.
+  $fallback_page = get_page_by_path('anfrage');
+  if ($fallback_page instanceof WP_Post) {
+    $url = get_permalink($fallback_page);
+    if ($url) {
+      return $url;
+    }
+  }
+
+  return home_url('/');
+}
+
+/**
+ * Register "Settings" submenu under Products for inquiry page selection.
+ */
+function gcp_register_inquiry_settings_page()
+{
+  add_submenu_page(
+    'edit.php?post_type=product',
+    __('Gastro-Cool Anfrage', 'gastro-cool-products'), // page title
+    __('Settings', 'gastro-cool-products'),            // menu title
+    'manage_options',
+    'gcp-inquiry-settings',
+    'gcp_render_inquiry_settings_page'
+  );
+}
+add_action('admin_menu', 'gcp_register_inquiry_settings_page');
+
+/**
+ * Render settings page for selecting inquiry page.
+ */
+function gcp_render_inquiry_settings_page()
+{
+  if (! current_user_can('manage_options')) {
+    return;
+  }
+
+  $message = '';
+
+  if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['gcp_inquiry_settings_nonce'])) {
+    if (wp_verify_nonce($_POST['gcp_inquiry_settings_nonce'], 'gcp_inquiry_settings_save')) {
+      $page_id = isset($_POST['gcp_inquiry_page_id']) ? (int) $_POST['gcp_inquiry_page_id'] : 0;
+      update_option('gc_inquiry_page_id', $page_id);
+      $message = __('Settings saved.', 'gastro-cool-products');
+    }
+  }
+
+  $current_id = (int) get_option('gc_inquiry_page_id');
+  $pages = get_pages([
+    'post_type'   => 'page',
+    'post_status' => 'publish',
+    'sort_column' => 'post_title',
+    'sort_order'  => 'ASC',
+  ]);
+  ?>
+  <div class="wrap">
+    <h1><?php echo esc_html__('Gastro-Cool Anfrage', 'gastro-cool-products'); ?></h1>
+    <?php if ($message) : ?>
+      <div id="message" class="updated notice notice-success is-dismissible">
+        <p><?php echo esc_html($message); ?></p>
+      </div>
+    <?php endif; ?>
+
+    <form method="post">
+      <?php wp_nonce_field('gcp_inquiry_settings_save', 'gcp_inquiry_settings_nonce'); ?>
+
+      <table class="form-table" role="presentation">
+        <tr>
+          <th scope="row">
+            <label for="gcp_inquiry_page_id">
+              <?php echo esc_html__('Inquiry page', 'gastro-cool-products'); ?>
+            </label>
+          </th>
+          <td>
+            <select name="gcp_inquiry_page_id" id="gcp_inquiry_page_id">
+              <option value="0"><?php echo esc_html__('— Select a page —', 'gastro-cool-products'); ?></option>
+              <?php foreach ($pages as $page) : ?>
+                <option value="<?php echo esc_attr($page->ID); ?>" <?php selected($current_id, $page->ID); ?>>
+                  <?php echo esc_html($page->post_title); ?>
+                </option>
+              <?php endforeach; ?>
+            </select>
+            <p class="description">
+              <?php echo esc_html__('Select the page that should be used for the product inquiry form.', 'gastro-cool-products'); ?>
+            </p>
+          </td>
+        </tr>
+      </table>
+
+      <?php submit_button(__('Save Changes', 'gastro-cool-products')); ?>
+    </form>
+  </div>
+  <?php
+}
+
 // Load ACF field groups (if ACF is active)
 add_action('plugins_loaded', function () {
   if (function_exists('acf_add_local_field_group')) {
@@ -249,8 +359,10 @@ add_action('plugins_loaded', function () {
     );
   });
 
+
   // Render inquiry overlay markup in footer
   add_action('wp_footer', function () {
+    $inquiry_url = gc_get_inquiry_page_url();
     ?>
     <div class="gc-inquiry-overlay" aria-hidden="true">
       <aside class="gc-inquiry-overlay__panel" role="dialog" aria-modal="true" aria-labelledby="gc-inquiry-overlay-title">
@@ -264,7 +376,7 @@ add_action('plugins_loaded', function () {
         </div>
         <footer class="gc-inquiry-overlay__footer">
           <button type="button" class="gc-inquiry-overlay__clear"><?php echo esc_html__('Liste leeren', 'gastro-cool-products'); ?></button>
-          <a class="gc-inquiry-overlay__submit" href="<?php echo esc_url('/anfrage'); ?>"><?php echo esc_html__('Zur Anfrage fortfahren', 'gastro-cool-products'); ?></a>
+          <a class="gc-inquiry-overlay__submit" href="<?php echo esc_url($inquiry_url); ?>"><?php echo esc_html__('Zur Anfrage fortfahren', 'gastro-cool-products'); ?></a>
         </footer>
       </aside>
     </div>
