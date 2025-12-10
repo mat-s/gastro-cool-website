@@ -1,29 +1,33 @@
 <?php
 /**
- * Admin flag to mark posts as "Überarbeitet" vs. Originalfassung.
- * Default: Originalfassung (nicht bearbeitet).
+ * Admin flag "updated" (ja/nein).
+ * Default: nein (nicht bearbeitet).
  *
  * Implemented as a local ACF field for easy removal later.
  */
 
-const GASTRO_COOL_EDIT_STATUS_META_KEY      = 'gc_edit_status';
-const GASTRO_COOL_EDIT_STATUS_META_KEY_OLD  = '_gc_edit_status'; // legacy from pre-ACF version
-const GASTRO_COOL_EDIT_STATUS_ORIGINAL      = 'original';
-const GASTRO_COOL_EDIT_STATUS_REVISED       = 'revised';
+const GASTRO_COOL_UPDATED_META_KEY          = 'gc_updated';
+const GASTRO_COOL_UPDATED_META_KEY_OLD      = 'gc_edit_status';  // from previous iteration
+const GASTRO_COOL_UPDATED_META_KEY_OLDER    = '_gc_edit_status'; // legacy from pre-ACF version
+const GASTRO_COOL_UPDATED_NO                = 'no';
+const GASTRO_COOL_UPDATED_YES               = 'yes';
 
 /**
  * Helper to get sanitized status with default fallback.
  */
 function gastro_cool_get_edit_status( $post_id ) {
-    $status = get_post_meta( $post_id, GASTRO_COOL_EDIT_STATUS_META_KEY, true );
+    $status = get_post_meta( $post_id, GASTRO_COOL_UPDATED_META_KEY, true );
 
-    // Fallback to legacy meta key if needed
+    // Fallback to legacy meta keys if needed
     if ( '' === $status ) {
-        $status = get_post_meta( $post_id, GASTRO_COOL_EDIT_STATUS_META_KEY_OLD, true );
+        $status = get_post_meta( $post_id, GASTRO_COOL_UPDATED_META_KEY_OLD, true );
+    }
+    if ( '' === $status ) {
+        $status = get_post_meta( $post_id, GASTRO_COOL_UPDATED_META_KEY_OLDER, true );
     }
 
-    if ( ! in_array( $status, [ GASTRO_COOL_EDIT_STATUS_ORIGINAL, GASTRO_COOL_EDIT_STATUS_REVISED ], true ) ) {
-        return GASTRO_COOL_EDIT_STATUS_ORIGINAL;
+    if ( ! in_array( $status, [ GASTRO_COOL_UPDATED_NO, GASTRO_COOL_UPDATED_YES ], true ) ) {
+        return GASTRO_COOL_UPDATED_NO;
     }
 
     return $status;
@@ -38,25 +42,25 @@ add_action( 'acf/init', function() {
     }
 
     acf_add_local_field_group( [
-        'key'                   => 'group_gc_edit_status',
-        'title'                 => __( 'Bearbeitungsstatus', 'gastro-cool' ),
+        'key'                   => 'group_gc_updated_flag',
+        'title'                 => __( 'Updated', 'gastro-cool' ),
         'fields'                => [
             [
-                'key'               => 'field_gc_edit_status',
-                'label'             => __( 'Bearbeitungsstatus', 'gastro-cool' ),
-                'name'              => GASTRO_COOL_EDIT_STATUS_META_KEY,
+                'key'               => 'field_gc_updated_flag',
+                'label'             => __( 'Updated', 'gastro-cool' ),
+                'name'              => GASTRO_COOL_UPDATED_META_KEY,
                 'type'              => 'button_group',
                 'choices'           => [
-                    GASTRO_COOL_EDIT_STATUS_ORIGINAL => __( 'Originalfassung', 'gastro-cool' ),
-                    GASTRO_COOL_EDIT_STATUS_REVISED  => __( 'Überarbeitet', 'gastro-cool' ),
+                    GASTRO_COOL_UPDATED_NO  => __( 'Nein', 'gastro-cool' ),
+                    GASTRO_COOL_UPDATED_YES => __( 'Ja', 'gastro-cool' ),
                 ],
-                'default_value'     => GASTRO_COOL_EDIT_STATUS_ORIGINAL,
+                'default_value'     => GASTRO_COOL_UPDATED_NO,
                 'layout'            => 'horizontal',
                 'return_format'     => 'value',
                 'wrapper'           => [
                     'width' => '',
                 ],
-                'instructions'      => __( 'Markiere, ob der Beitrag bereits überarbeitet wurde.', 'gastro-cool' ),
+                'instructions'      => __( 'Flag "updated": Ist der Beitrag überarbeitet?', 'gastro-cool' ),
             ],
         ],
         'location'              => [
@@ -85,7 +89,7 @@ add_filter( 'manage_posts_columns', function( $columns ) {
         $new_columns[ $key ] = $label;
 
         if ( 'title' === $key ) {
-            $new_columns['gastro_cool_edit_status'] = __( 'Bearbeitung', 'gastro-cool' );
+            $new_columns['gastro_cool_edit_status'] = __( 'Updated', 'gastro-cool' );
         }
     }
 
@@ -99,9 +103,42 @@ add_action( 'manage_posts_custom_column', function( $column, $post_id ) {
 
     $status = gastro_cool_get_edit_status( $post_id );
 
-    if ( GASTRO_COOL_EDIT_STATUS_REVISED === $status ) {
-        echo esc_html__( 'Überarbeitet', 'gastro-cool' );
-    } else {
-        echo esc_html__( 'Originalfassung', 'gastro-cool' );
-    }
+    $label = ( GASTRO_COOL_UPDATED_YES === $status ) ? __( 'Ja', 'gastro-cool' ) : __( 'Nein', 'gastro-cool' );
+    $class = ( GASTRO_COOL_UPDATED_YES === $status ) ? 'gc-updated-yes' : 'gc-updated-no';
+
+    printf(
+        '<span class="gc-updated-flag %s">%s</span>',
+        esc_attr( $class ),
+        esc_html( $label )
+    );
 }, 10, 2 );
+
+/**
+ * Minimal styling for the list column.
+ */
+add_action( 'admin_head', function() {
+    ?>
+    <style>
+        .column-gastro_cool_edit_status { width: 120px; }
+        .gc-updated-flag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #1d2327;
+            background: #e1e3e8;
+        }
+        .gc-updated-yes {
+            color: #0f5132;
+            background: #d1e7dd;
+            border: 1px solid #badbcc;
+        }
+        .gc-updated-no {
+            color: #5c5f62;
+            background: #f1f1f1;
+            border: 1px solid #e2e3e5;
+        }
+    </style>
+    <?php
+} );
