@@ -135,10 +135,60 @@ add_action( 'admin_head', function() {
             border: 1px solid #badbcc;
         }
         .gc-updated-no {
-            color: #5c5f62;
-            background: #f1f1f1;
-            border: 1px solid #e2e3e5;
+            color: #842029;
+            background: #f8d7da;
+            border: 1px solid #f5c2c7;
         }
     </style>
+    <?php
+} );
+
+/**
+ * Make column sortable.
+ */
+add_filter( 'manage_edit-post_sortable_columns', function( $columns ) {
+    $columns['gastro_cool_edit_status'] = 'gastro_cool_edit_status';
+    return $columns;
+} );
+
+add_action( 'pre_get_posts', function( $query ) {
+    if ( ! is_admin() || ! $query->is_main_query() ) {
+        return;
+    }
+
+    // Sorting
+    if ( $query->get( 'orderby' ) === 'gastro_cool_edit_status' ) {
+        $query->set( 'meta_key', GASTRO_COOL_UPDATED_META_KEY );
+        $query->set( 'orderby', 'meta_value' );
+    }
+
+    // Filtering
+    $filter_value = isset( $_GET['gc_updated_filter'] ) ? sanitize_text_field( wp_unslash( $_GET['gc_updated_filter'] ) ) : '';
+    if ( in_array( $filter_value, [ GASTRO_COOL_UPDATED_YES, GASTRO_COOL_UPDATED_NO ], true ) ) {
+        $meta_query = (array) $query->get( 'meta_query' );
+        $meta_query[] = [
+            'key'     => GASTRO_COOL_UPDATED_META_KEY,
+            'value'   => $filter_value,
+            'compare' => '=',
+        ];
+        $query->set( 'meta_query', $meta_query );
+    }
+} );
+
+/**
+ * Add filter dropdown above posts list.
+ */
+add_action( 'restrict_manage_posts', function( $post_type ) {
+    if ( 'post' !== $post_type ) {
+        return;
+    }
+
+    $current = isset( $_GET['gc_updated_filter'] ) ? sanitize_text_field( wp_unslash( $_GET['gc_updated_filter'] ) ) : '';
+    ?>
+    <select name="gc_updated_filter">
+        <option value=""><?php esc_html_e( 'Alle Updated-Status', 'gastro-cool' ); ?></option>
+        <option value="<?php echo esc_attr( GASTRO_COOL_UPDATED_YES ); ?>" <?php selected( $current, GASTRO_COOL_UPDATED_YES ); ?>><?php esc_html_e( 'Ja', 'gastro-cool' ); ?></option>
+        <option value="<?php echo esc_attr( GASTRO_COOL_UPDATED_NO ); ?>" <?php selected( $current, GASTRO_COOL_UPDATED_NO ); ?>><?php esc_html_e( 'Nein', 'gastro-cool' ); ?></option>
+    </select>
     <?php
 } );
