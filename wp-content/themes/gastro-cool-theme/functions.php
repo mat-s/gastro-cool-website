@@ -21,6 +21,8 @@ require_once get_stylesheet_directory() . '/inc/setup.php';
 require_once get_stylesheet_directory() . '/inc/disable-comments-and-emojis.php';
 // Navigation and menu-related filters
 require_once get_stylesheet_directory() . '/inc/navigation.php';
+// Admin flag to mark posts as "überarbeitet" vs. Originalfassung
+require_once get_stylesheet_directory() . '/inc/edit-status-flag.php';
 
 // Register custom Elementor widgets via a Widget Manager (if Elementor is active)
 // Load and bootstrap the widget manager; hooks inside will run when Elementor fires
@@ -64,4 +66,3 @@ add_action( 'admin_head', function() {
         }
     </style>';
 } );
-
