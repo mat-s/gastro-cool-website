@@ -3,6 +3,11 @@
 
   var STORAGE_KEY = 'gastrocool_inquiry_list';
 
+  function sanitizeQuantity(value) {
+    var qty = parseInt(value, 10);
+    return isNaN(qty) || qty < 1 ? 1 : qty;
+  }
+
   /**
    * Read inquiry list from localStorage.
    * Always returns an array of product objects.
@@ -34,7 +39,8 @@
               id: String(item.id),
               title: String(item.title || ''),
               image: String(item.image || ''),
-              url: String(item.url || '')
+              url: String(item.url || ''),
+              quantity: sanitizeQuantity(item.quantity || 1)
             });
           }
         }
@@ -49,7 +55,8 @@
           id: String(parsed.id),
           title: String(parsed.title || ''),
           image: String(parsed.image || ''),
-          url: String(parsed.url || '')
+          url: String(parsed.url || ''),
+          quantity: sanitizeQuantity(parsed.quantity || 1)
         }];
       }
       
@@ -133,7 +140,7 @@
 
     /**
      * Get current inquiry list.
-     * @returns {Array<{id:string,title:string,image:string,url:string}>}
+     * @returns {Array<{id:string,title:string,image:string,url:string,quantity:number}>}
      */
     getInquiryList: function () {
       return readList();
@@ -183,7 +190,8 @@
         id: id,
         title: String(product.title || ''),
         image: String(product.image || ''),
-        url: String(product.url || '')
+        url: String(product.url || ''),
+        quantity: sanitizeQuantity(product.quantity || 1)
       };
       
       // Create new array to avoid reference issues
@@ -237,6 +245,34 @@
       }
       
       return success;
+    },
+
+    /**
+     * Update quantity for a product in the inquiry list.
+     * @param {string|number} productId
+     * @param {number} quantity
+     */
+    updateQuantity: function (productId, quantity) {
+      var id = String(productId);
+      var list = readList();
+      var updated = false;
+      var next = [];
+
+      for (var i = 0; i < list.length; i++) {
+        var item = list[i];
+        if (String(item.id) === id) {
+          item.quantity = sanitizeQuantity(quantity);
+          updated = true;
+        }
+        next.push(item);
+      }
+
+      if (!updated) {
+        console.warn('updateQuantity: product not found', id);
+        return false;
+      }
+
+      return writeList(next);
     },
 
     /**

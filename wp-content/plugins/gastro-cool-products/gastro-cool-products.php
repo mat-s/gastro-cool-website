@@ -317,13 +317,33 @@ add_action('plugins_loaded', function () {
   add_action('elementor_pro/init', function() {
     require_once GCP_PLUGIN_DIR . 'elementor-skins/products-grid.php';
   });
-  // Elementor widget: Inquiry button
+  // Elementor widgets: Inquiry button & list
   add_action('elementor/widgets/register', function($widgets_manager) {
     if (! class_exists('\Elementor\Widget_Base')) {
       return;
     }
     require_once GCP_PLUGIN_DIR . 'elementor-widgets/inquiry-button.php';
+    require_once GCP_PLUGIN_DIR . 'elementor-widgets/inquiry-list.php';
     $widgets_manager->register( new \GCP\Elementor\Widgets\Inquiry_Button_Widget() );
+    $widgets_manager->register( new \GCP\Elementor\Widgets\Inquiry_List_Widget() );
+  });
+  // Register widget-specific assets
+  add_action('elementor/frontend/after_register_scripts', function() {
+    wp_register_script(
+      'gcp-inquiry-list-widget',
+      plugins_url('assets/js/inquiry-list.js', __FILE__),
+      ['gcp-inquiry'],
+      GCP_VERSION,
+      true
+    );
+  });
+  add_action('elementor/frontend/after_register_styles', function() {
+    wp_register_style(
+      'gcp-inquiry-list-widget',
+      plugins_url('assets/css/inquiry-list.css', __FILE__),
+      [],
+      GCP_VERSION
+    );
   });
   // Enqueue skin styles and inquiry script on frontend
   add_action('wp_enqueue_scripts', function(){
