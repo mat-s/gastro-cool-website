@@ -1,0 +1,127 @@
+.gc-inquiry-form {
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 18px;
+  background: #ffffff;
+  box-shadow: 0 10px 30px rgba(16, 24, 40, 0.06);
+}
+
+.gc-inquiry-form__fields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.gc-inquiry-form__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.gc-inquiry-form__field--100 {
+  flex: 1 1 100%;
+}
+
+.gc-inquiry-form__field--50 {
+  flex: 1 1 calc(50% - 8px);
+}
+
+.gc-inquiry-form__label {
+  font-weight: 600;
+  font-size: 14px;
+  color: #111827;
+}
+
+.gc-inquiry-form__required {
+  color: #ef4444;
+  margin-left: 4px;
+}
+
+.gc-inquiry-form__input {
+  width: 100%;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 14px;
+  color: #111827;
+  background: #ffffff;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.gc-inquiry-form__input:focus {
+  outline: none;
+  border-color: #00b2c6;
+  box-shadow: 0 0 0 3px rgba(0, 178, 198, 0.12);
+}
+
+.gc-inquiry-form__actions {
+  margin-top: 18px;
+}
+
+.gc-inquiry-form__choices {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.gc-inquiry-form__choice {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #111827;
+}
+
+.gc-inquiry-form__choice input {
+  width: 16px;
+  height: 16px;
+}
+
+.gc-inquiry-form__submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid #00b2c6;
+  background: #00b2c6;
+  color: #ffffff;
+  border-radius: 10px;
+  padding: 12px 18px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.1s ease;
+}
+
+.gc-inquiry-form__submit:hover {
+  background: #00a0b2;
+  border-color: #00a0b2;
+}
+
+.gc-inquiry-form__submit:active {
+  transform: translateY(1px);
+}
+
+.gc-inquiry-form__message {
+  margin-top: 12px;
+  font-size: 14px;
+}
+
+.gc-inquiry-form__message--success {
+  color: #16a34a;
+}
+
+.gc-inquiry-form__message--error {
+  color: #dc2626;
+}
+
+.gc-inquiry-form--submitted .gc-inquiry-form__fields,
+.gc-inquiry-form--submitted .gc-inquiry-form__actions {
+  display: none;
+}
+
+@media (max-width: 680px) {
+  .gc-inquiry-form__field--50 {
+    flex-basis: 100%;
+  }
+}

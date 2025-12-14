@@ -324,8 +324,10 @@ add_action('plugins_loaded', function () {
     }
     require_once GCP_PLUGIN_DIR . 'elementor-widgets/inquiry-button.php';
     require_once GCP_PLUGIN_DIR . 'elementor-widgets/inquiry-list.php';
+    require_once GCP_PLUGIN_DIR . 'elementor-widgets/inquiry-form.php';
     $widgets_manager->register( new \GCP\Elementor\Widgets\Inquiry_Button_Widget() );
     $widgets_manager->register( new \GCP\Elementor\Widgets\Inquiry_List_Widget() );
+    $widgets_manager->register( new \GCP\Elementor\Widgets\Inquiry_Form_Widget() );
   });
   // Register widget-specific assets
   add_action('elementor/frontend/after_register_scripts', function() {
@@ -336,11 +338,24 @@ add_action('plugins_loaded', function () {
       GCP_VERSION,
       true
     );
+    wp_register_script(
+      'gcp-inquiry-form-widget',
+      plugins_url('assets/js/inquiry-form.js', __FILE__),
+      ['gcp-inquiry'],
+      GCP_VERSION,
+      true
+    );
   });
   add_action('elementor/frontend/after_register_styles', function() {
     wp_register_style(
       'gcp-inquiry-list-widget',
       plugins_url('assets/css/inquiry-list.css', __FILE__),
+      [],
+      GCP_VERSION
+    );
+    wp_register_style(
+      'gcp-inquiry-form-widget',
+      plugins_url('assets/css/inquiry-form.css', __FILE__),
       [],
       GCP_VERSION
     );
@@ -403,6 +418,186 @@ add_action('plugins_loaded', function () {
     <?php
   });
 });
+
+/**
+ * Handle AJAX submission of the inquiry form widget.
+ */
+add_action('wp_ajax_gcp_submit_inquiry', 'gcp_handle_inquiry_form');
+add_action('wp_ajax_nopriv_gcp_submit_inquiry', 'gcp_handle_inquiry_form');
+
+function gcp_handle_inquiry_form() {
+  // Basic nonce/security
+  check_ajax_referer('gcp_inquiry_form_nonce', 'nonce');
+
+  $fields_json = isset($_POST['fields_config']) ? wp_unslash($_POST['fields_config']) : '';
+  $submitted_fields = isset($_POST['fields']) ? (array) $_POST['fields'] : [];
+  $recipient = isset($_POST['recipient']) ? sanitize_email(wp_unslash($_POST['recipient'])) : '';
+  $products_json = isset($_POST['products']) ? wp_unslash($_POST['products']) : '[]';
+
+  $fields_config = json_decode($fields_json, true);
+  if (! is_array($fields_config)) {
+    wp_send_json_error(['message' => __('Ungültige Feldkonfiguration.', 'gastro-cool-products')], 400);
+  }
+
+  // Sanitize incoming fields according to config
+  $clean_fields = [];
+  $errors = [];
+
+  foreach ($fields_config as $field) {
+    $name = isset($field['name']) ? sanitize_key($field['name']) : '';
+    if (! $name) {
+      continue;
+    }
+    $label = isset($field['label']) ? sanitize_text_field($field['label']) : $name;
+    $type = isset($field['type']) ? sanitize_text_field($field['type']) : 'text';
+    $required = ! empty($field['required']);
+    $options = isset($field['options']) && is_array($field['options']) ? $field['options'] : [];
+
+    $raw_value = isset($submitted_fields[$name]) ? wp_unslash($submitted_fields[$name]) : '';
+    $value = '';
+
+    switch ($type) {
+      case 'email':
+        $value = sanitize_email($raw_value);
+        if ($value && ! is_email($value)) {
+          $errors[] = sprintf(__('Bitte eine gültige E-Mail für %s eingeben.', 'gastro-cool-products'), $label);
+        }
+        break;
+      case 'tel':
+        $value = sanitize_text_field($raw_value);
+        break;
+      case 'url':
+        $value = esc_url_raw($raw_value);
+        if ($value && ! filter_var($value, FILTER_VALIDATE_URL)) {
+          $errors[] = sprintf(__('Bitte eine gültige URL für %s eingeben.', 'gastro-cool-products'), $label);
+        }
+        break;
+      case 'number':
+        $value = is_numeric($raw_value) ? $raw_value : '';
+        if ($value === '') {
+          $errors[] = sprintf(__('Bitte eine gültige Zahl für %s eingeben.', 'gastro-cool-products'), $label);
+        }
+        break;
+      case 'select':
+      case 'radio':
+        $value = sanitize_text_field($raw_value);
+        if (! empty($options)) {
+          $allowed_values = array_map(function($opt){ return isset($opt['value']) ? $opt['value'] : ''; }, $options);
+          if ($value !== '' && ! in_array($value, $allowed_values, true)) {
+            $errors[] = sprintf(__('Ungültige Auswahl für %s.', 'gastro-cool-products'), $label);
+          }
+        }
+        break;
+      case 'checkbox':
+        $value = [];
+        if (is_array($raw_value)) {
+          foreach ($raw_value as $rv) {
+            $value[] = sanitize_text_field($rv);
+          }
+        } elseif ($raw_value !== '') {
+          $value[] = sanitize_text_field($raw_value);
+        }
+        if ($required && empty($value)) {
+          $errors[] = sprintf(__('Bitte mindestens eine Option für %s auswählen.', 'gastro-cool-products'), $label);
+        }
+        if (! empty($options)) {
+          $allowed_values = array_map(function($opt){ return isset($opt['value']) ? $opt['value'] : ''; }, $options);
+          foreach ($value as $single) {
+            if (! in_array($single, $allowed_values, true)) {
+              $errors[] = sprintf(__('Ungültige Auswahl für %s.', 'gastro-cool-products'), $label);
+              break;
+            }
+          }
+        }
+        break;
+      case 'textarea':
+        $value = sanitize_textarea_field($raw_value);
+        break;
+      default:
+        $value = sanitize_text_field($raw_value);
+        break;
+    }
+
+    if ($required && $value === '') {
+      $errors[] = sprintf(__('Das Feld %s ist erforderlich.', 'gastro-cool-products'), $label);
+    }
+
+    $clean_fields[] = [
+      'name' => $name,
+      'label' => $label,
+      'value' => $value,
+    ];
+  }
+
+  if (! empty($errors)) {
+    wp_send_json_error(['message' => implode(' ', $errors)], 400);
+  }
+
+  $products = json_decode($products_json, true);
+  if (! is_array($products)) {
+    $products = [];
+  }
+
+  $site_name = wp_specialchars_decode(get_bloginfo('name'), ENT_QUOTES);
+  $subject = sprintf(__('Neue Produktanfrage von %s', 'gastro-cool-products'), $site_name);
+
+  // Build HTML email
+  ob_start();
+  ?>
+  <div>
+    <h2><?php echo esc_html__('Produktanfrage', 'gastro-cool-products'); ?></h2>
+    <table cellpadding="6" cellspacing="0" style="border-collapse: collapse; width: 100%; max-width: 640px;">
+      <tbody>
+        <?php foreach ($clean_fields as $field) : ?>
+          <?php $display_value = is_array($field['value']) ? implode(', ', $field['value']) : $field['value']; ?>
+          <tr>
+            <th align="left" style="text-align:left; border-bottom:1px solid #e5e7eb; padding:8px 6px; white-space: nowrap; vertical-align: top;">
+              <?php echo esc_html($field['label']); ?>
+            </th>
+            <td style="border-bottom:1px solid #e5e7eb; padding:8px 6px;">
+              <?php echo nl2br(esc_html($display_value)); ?>
+            </td>
+          </tr>
+        <?php endforeach; ?>
+      </tbody>
+    </table>
+
+    <?php if (! empty($products)) : ?>
+      <h3 style="margin-top: 18px;"><?php echo esc_html__('Ausgewählte Produkte', 'gastro-cool-products'); ?></h3>
+      <table cellpadding="6" cellspacing="0" style="border-collapse: collapse; width: 100%; max-width: 640px;">
+        <thead>
+          <tr>
+            <th align="left" style="border-bottom:1px solid #e5e7eb; padding:8px 6px;"><?php echo esc_html__('Titel', 'gastro-cool-products'); ?></th>
+            <th align="left" style="border-bottom:1px solid #e5e7eb; padding:8px 6px;"><?php echo esc_html__('Menge', 'gastro-cool-products'); ?></th>
+            <th align="left" style="border-bottom:1px solid #e5e7eb; padding:8px 6px;"><?php echo esc_html__('Produkt-ID', 'gastro-cool-products'); ?></th>
+          </tr>
+        </thead>
+        <tbody>
+          <?php foreach ($products as $product) : ?>
+            <tr>
+              <td style="border-bottom:1px solid #e5e7eb; padding:8px 6px;"><?php echo esc_html(isset($product['title']) ? $product['title'] : ''); ?></td>
+              <td style="border-bottom:1px solid #e5e7eb; padding:8px 6px;"><?php echo esc_html(isset($product['quantity']) ? $product['quantity'] : 1); ?></td>
+              <td style="border-bottom:1px solid #e5e7eb; padding:8px 6px;"><?php echo esc_html(isset($product['id']) ? $product['id'] : ''); ?></td>
+            </tr>
+          <?php endforeach; ?>
+        </tbody>
+      </table>
+    <?php endif; ?>
+  </div>
+  <?php
+
+  $message = ob_get_clean();
+  $headers = ['Content-Type: text/html; charset=UTF-8'];
+  $to = $recipient && is_email($recipient) ? $recipient : get_option('admin_email');
+
+  $sent = wp_mail($to, $subject, $message, $headers);
+
+  if ($sent) {
+    wp_send_json_success(['message' => __('Vielen Dank für Ihre Anfrage.', 'gastro-cool-products')]);
+  } else {
+    wp_send_json_error(['message' => __('Versand fehlgeschlagen. Bitte versuchen Sie es später erneut.', 'gastro-cool-products')], 500);
+  }
+}
 
 // Allow XML uploads for admins (needed for the Odoo XML import)
 add_filter('upload_mimes', function ($mimes) {
