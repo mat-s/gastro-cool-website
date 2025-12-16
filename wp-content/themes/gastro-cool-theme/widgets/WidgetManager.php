@@ -58,6 +58,10 @@ class WidgetManager
    */
   public function register_widgets($widgets_manager)
   {
-    
+    // Simple List widget
+    require_once get_stylesheet_directory() . '/widgets/class-simple-list.php';
+    if (class_exists('\GastroCoolTheme\Widgets\Simple_List')) {
+      $widgets_manager->register(new \GastroCoolTheme\Widgets\Simple_List());
+    }
   }
 }
