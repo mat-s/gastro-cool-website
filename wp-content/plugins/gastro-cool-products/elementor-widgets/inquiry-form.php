@@ -17,7 +17,7 @@ class Inquiry_Form_Widget extends Widget_Base
   }
 
   public function get_title() {
-    return __('Inquiry Form (Gastro-Cool)', 'gastro-cool-products');
+    return __('Inquiry Form', 'gastro-cool-products');
   }
 
   public function get_icon() {
@@ -25,7 +25,7 @@ class Inquiry_Form_Widget extends Widget_Base
   }
 
   public function get_categories() {
-    return ['general'];
+    return ['gastro-cool'];
   }
 
   public function get_script_depends() {

@@ -17,7 +17,7 @@ class Inquiry_Button_Widget extends Widget_Base
   }
 
   public function get_title() {
-    return __('Inquiry Button (Gastro‑Cool)', 'gastro-cool-products');
+    return __('Inquiry Button', 'gastro-cool-products');
   }
 
   public function get_icon() {
@@ -25,7 +25,7 @@ class Inquiry_Button_Widget extends Widget_Base
   }
 
   public function get_categories() {
-    return ['general'];
+    return ['gastro-cool'];
   }
 
   protected function register_controls() {
