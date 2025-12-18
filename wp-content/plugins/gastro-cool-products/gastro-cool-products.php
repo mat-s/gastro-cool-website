@@ -434,8 +434,13 @@ function gcp_handle_inquiry_form() {
   $recipient = isset($_POST['recipient']) ? sanitize_email(wp_unslash($_POST['recipient'])) : '';
   $products_json = isset($_POST['products']) ? wp_unslash($_POST['products']) : '[]';
 
+  error_log('GCP Inquiry: incoming fields=' . print_r($submitted_fields, true));
+  error_log('GCP Inquiry: fields_config raw=' . $fields_json);
+  error_log('GCP Inquiry: products raw=' . $products_json);
+
   $fields_config = json_decode($fields_json, true);
   if (! is_array($fields_config)) {
+    error_log('GCP Inquiry: invalid fields_config');
     wp_send_json_error(['message' => __('Ungültige Feldkonfiguration.', 'gastro-cool-products')], 400);
   }
 
@@ -530,6 +535,7 @@ function gcp_handle_inquiry_form() {
   }
 
   if (! empty($errors)) {
+    error_log('GCP Inquiry: validation errors=' . implode(' | ', $errors));
     wp_send_json_error(['message' => implode(' ', $errors)], 400);
   }
 
@@ -537,6 +543,8 @@ function gcp_handle_inquiry_form() {
   if (! is_array($products)) {
     $products = [];
   }
+  error_log('GCP Inquiry: clean_fields=' . print_r($clean_fields, true));
+  error_log('GCP Inquiry: products parsed=' . print_r($products, true));
 
   $site_name = wp_specialchars_decode(get_bloginfo('name'), ENT_QUOTES);
   $subject = sprintf(__('Neue Produktanfrage von %s', 'gastro-cool-products'), $site_name);
@@ -591,10 +599,12 @@ function gcp_handle_inquiry_form() {
   $to = $recipient && is_email($recipient) ? $recipient : get_option('admin_email');
 
   $sent = wp_mail($to, $subject, $message, $headers);
+  error_log('GCP Inquiry: mail to=' . $to . ' subject=' . $subject . ' sent=' . (int) $sent);
 
   if ($sent) {
     wp_send_json_success(['message' => __('Vielen Dank für Ihre Anfrage.', 'gastro-cool-products')]);
   } else {
+    error_log('GCP Inquiry: wp_mail failed');
     wp_send_json_error(['message' => __('Versand fehlgeschlagen. Bitte versuchen Sie es später erneut.', 'gastro-cool-products')], 500);
   }
 }

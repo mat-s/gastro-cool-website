@@ -41,10 +41,12 @@
       }
 
       setMessage(form, '');
-      disableForm(form, true);
 
       var formData = new FormData(form);
       formData.append('products', JSON.stringify(getProducts()));
+
+      // Disable after collecting data to avoid disabled inputs being dropped
+      disableForm(form, true);
 
       fetch(ajaxUrl, {
         method: 'POST',
