@@ -51,6 +51,9 @@ class Simple_List extends Widget_Base
         'type' => Controls_Manager::TEXT,
         'default' => __('Listeneintrag', 'gastro-cool-theme'),
         'label_block' => true,
+        'dynamic' => [
+          'active' => true,
+        ],
       ]
     );
 
@@ -61,6 +64,9 @@ class Simple_List extends Widget_Base
         'type' => Controls_Manager::URL,
         'placeholder' => __('https://example.com', 'gastro-cool-theme'),
         'show_external' => true,
+        'dynamic' => [
+          'active' => true,
+        ],
         'default' => [
           'url' => '',
           'is_external' => false,

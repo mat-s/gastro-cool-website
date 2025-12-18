@@ -44,10 +44,10 @@ class Inquiry_Button_Widget extends Widget_Base
 					'fa4compatibility' => 'icon',
 					'skin' => 'inline',
 					'label_block' => false,
-        'default' => [
-          'value' => 'eicon-editor-list-ul',
-          'library' => 'eicons',
-        ],
+          'default' => [
+            'value' => 'eicon-editor-list-ul',
+            'library' => 'eicons',
+          ],
 				]
 			);
 

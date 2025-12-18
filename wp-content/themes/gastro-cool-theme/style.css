@@ -81,6 +81,18 @@ a:hover {
   }
 }
 
+.gc-simple-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.gc-simple-list__item span,
+.gc-simple-list__item a {
+  color: var(--e-global-color-primary);
+  font-weight: 500;
+  line-height: 1.8em;
+}
+
 .product-template-default .site-content > .ast-container {
   max-width: 100%;
   padding: 0;

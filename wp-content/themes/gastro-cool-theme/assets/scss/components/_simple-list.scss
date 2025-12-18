@@ -1,0 +1,14 @@
+// Styles for the Simple List widget (Gastro-Cool). Add rules as needed.
+.gc-simple-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  &__item {
+    span,
+    a {
+      color: var(--e-global-color-primary);
+      font-weight: 500;
+      line-height: 1.8em;
+    }
+  }
+}
