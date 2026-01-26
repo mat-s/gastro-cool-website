@@ -41,6 +41,9 @@ function gcp_item_text_norm(SimpleXMLElement $item){
     $text = trim((string)$node);
     if ($text !== '') $parts[] = $text;
     foreach ($node->children() as $child){ $walker($child); }
+    foreach ($node->getNamespaces(true) as $ns){
+      foreach ($node->children($ns) as $child){ $walker($child); }
+    }
   };
   $walker($item);
   return gcp_norm(implode(' ', $parts));
@@ -84,6 +87,44 @@ function gcp_get_all($item, $name, $ns=null){
   else { $nodes = $item->{$name}; }
   $out = [];
   foreach ($nodes as $n){ $out[] = (string)$n; }
+  return $out;
+}
+
+function gcp_get_path(SimpleXMLElement $item, array $path, $ns=null){
+  $cur = $item;
+  $last = array_pop($path);
+  foreach ($path as $p){
+    if (! isset($cur->{$p}[0])) return '';
+    $cur = $cur->{$p}[0];
+  }
+  if ($ns){
+    $nodes = $cur->children($ns)->{$last};
+    if (isset($nodes[0])) return (string)$nodes[0];
+  }
+  if (isset($cur->{$last}[0])) return (string)$cur->{$last}[0];
+  return '';
+}
+
+function gcp_get_all_path(SimpleXMLElement $item, array $path, $ns=null){
+  $cur = $item;
+  $last = array_pop($path);
+  foreach ($path as $p){
+    if (! isset($cur->{$p}[0])) return [];
+    $cur = $cur->{$p}[0];
+  }
+  $nodes = $ns ? $cur->children($ns)->{$last} : $cur->{$last};
+  $out = [];
+  foreach ($nodes as $n){ $out[] = (string)$n; }
+  return $out;
+}
+
+function gcp_get_text_list_path(SimpleXMLElement $item, array $path){
+  $vals = gcp_get_all_path($item, $path, null);
+  $out = [];
+  foreach ($vals as $v){
+    $v = trim((string)$v);
+    if ($v !== '') $out[] = $v;
+  }
   return $out;
 }
 
@@ -172,12 +213,108 @@ function gcp_update_field_safe($name, $value, $post_id){
   else { update_post_meta($post_id, $name, $value); }
 }
 
-function gcp_media_sideload_featured($url, $post_id){
+function gcp_update_meta_raw($post_id, $name, $value){
+  if ($value === null) return;
+  if (is_string($value) && trim($value) === '') return;
+  update_post_meta($post_id, $name, $value);
+}
+
+function gcp_find_attachment_by_source_url($url){
+  $url = trim((string)$url);
+  if ($url === '') return 0;
+  $q = new WP_Query([
+    'post_type' => 'attachment',
+    'post_status' => 'inherit',
+    'meta_key' => 'gcp_source_url',
+    'meta_value' => $url,
+    'fields' => 'ids',
+    'posts_per_page' => 1,
+  ]);
+  if ($q->have_posts()) return (int)$q->posts[0];
+  $maybe = attachment_url_to_postid($url);
+  return $maybe ? (int)$maybe : 0;
+}
+
+function gcp_media_sideload_url($url, $post_id){
+  $url = trim((string)$url);
+  if ($url === '') return 0;
+  $existing = gcp_find_attachment_by_source_url($url);
+  if ($existing) return $existing;
   if (! function_exists('media_sideload_image')) require_once ABSPATH.'wp-admin/includes/media.php';
   if (! function_exists('download_url')) require_once ABSPATH.'wp-admin/includes/file.php';
   if (! function_exists('wp_read_image_metadata')) require_once ABSPATH.'wp-admin/includes/image.php';
   $att_id = media_sideload_image($url, $post_id, null, 'id');
-  if (! is_wp_error($att_id)) set_post_thumbnail($post_id, (int)$att_id);
+  if (is_wp_error($att_id)) return 0;
+  update_post_meta((int)$att_id, 'gcp_source_url', $url);
+  return (int)$att_id;
+}
+
+function gcp_bool_from_text($s){
+  $s = strtolower(trim((string)$s));
+  if ($s === '') return null;
+  if (in_array($s, ['1','true','yes','ja','y','j'])) return 1;
+  if (in_array($s, ['0','false','no','nein','n'])) return 0;
+  return 1;
+}
+
+function gcp_mm_to_cm($val){
+  if ($val === null) return null;
+  return ($val > 50) ? ($val / 10) : $val;
+}
+
+function gcp_pick_download_url(SimpleXMLElement $item, $type){
+  if (! isset($item->downloads[0])) return '';
+  if ($type === 'datasheet'){
+    $nodes = $item->downloads->datasheets->datasheet ?? null;
+  } else {
+    $nodes = $item->downloads->manuals->manual ?? null;
+  }
+  if (! isset($nodes[0])) return '';
+  foreach ($nodes as $n){
+    $lang = strtolower(trim((string)$n->language));
+    $url = trim((string)$n->file_url);
+    if ($lang === 'de' && $url !== '') return $url;
+  }
+  foreach ($nodes as $n){
+    $url = trim((string)$n->file_url);
+    if ($url !== '') return $url;
+  }
+  return '';
+}
+
+function gcp_extract_variants(SimpleXMLElement $item){
+  $out = [];
+  $groups = $item->variants->variant_group ?? null;
+  if (! isset($groups[0])) return $out;
+  foreach ($groups as $g){
+    $group = [
+      'base_model' => (string)$g->base_model,
+      'can_size' => (string)$g->can_size,
+      'capacity' => (string)$g->capacity,
+      'volume' => (string)$g->volume,
+      'description' => (string)$g->description,
+      'options' => [],
+    ];
+    if (isset($g->options->option[0])){
+      foreach ($g->options->option as $opt){
+        $group['options'][] = [
+          'artno' => (string)$opt->artno,
+          'type' => (string)$opt->type,
+          'value' => (string)$opt->value,
+          'ean' => (string)$opt->ean,
+          'additional_info' => (string)$opt->additional_info,
+          'image_link' => (string)$opt->image_link,
+        ];
+      }
+    }
+    $out[] = $group;
+  }
+  return $out;
+}
+
+function gcp_media_sideload_featured($url, $post_id){
+  $att_id = gcp_media_sideload_url($url, $post_id);
+  if ($att_id) set_post_thumbnail($post_id, (int)$att_id);
 }
 
 // Process a single <item> element (SimpleXMLElement) and update counters
@@ -185,159 +322,268 @@ function gcp_import_process_item(SimpleXMLElement $item, $download_images, &$cou
   $g = 'http://base.google.com/ns/1.0';
 
   $external_id = gcp_get_first($item, 'id', $g);
+  if ($external_id==='') $external_id = gcp_get_first($item, 'id');
+  if ($external_id==='') $external_id = gcp_get_first($item, 'mastercode');
   if ($external_id==='') { $skipped++; return; }
 
   $post_id = gcp_find_product_by_external_id($external_id);
-  $title = (string)$item->title;
-  $desc  = html_entity_decode((string)$item->description);
+  $title = gcp_get_first($item, 'product_name');
+  if ($title==='') $title = gcp_get_first($item, 'title_seo');
+  if ($title==='') $title = gcp_get_first($item, 'title');
+  $desc = gcp_get_first($item, 'description_long');
+  if ($desc==='') $desc = gcp_get_first($item, 'intro');
+  $desc = html_entity_decode((string)$desc);
+  $excerpt = gcp_get_first($item, 'short_description');
+  if ($excerpt==='') $excerpt = gcp_get_first($item, 'intro');
 
   if ($post_id){
-    wp_update_post(['ID'=>$post_id,'post_title'=>$title,'post_content'=>$desc,'post_status'=>'publish']);
+    $update = ['ID'=>$post_id,'post_title'=>$title,'post_content'=>$desc,'post_status'=>'publish'];
+    if ($excerpt!=='') $update['post_excerpt'] = $excerpt;
+    wp_update_post($update);
     $count_updated++;
   } else {
-    $post_id = wp_insert_post(['post_type'=>'product','post_title'=>$title,'post_content'=>$desc,'post_status'=>'publish']);
+    $create = ['post_type'=>'product','post_title'=>$title,'post_content'=>$desc,'post_status'=>'publish'];
+    if ($excerpt!=='') $create['post_excerpt'] = $excerpt;
+    $post_id = wp_insert_post($create);
     if (is_wp_error($post_id) || ! $post_id){ $skipped++; return; }
     $count_created++;
   }
 
   // ACF/meta mapping
   gcp_update_field_safe('external_id', $external_id, $post_id);
-  gcp_update_field_safe('gtin', gcp_get_first($item,'gtin',$g), $post_id);
-  gcp_update_field_safe('stock', intval(gcp_get_first($item,'stock',$g)), $post_id);
-  gcp_update_field_safe('availability', gcp_get_first($item,'availability',$g), $post_id);
-  gcp_update_field_safe('refill_time', intval(gcp_get_first($item,'refillTime',$g)), $post_id);
+  $gtin = gcp_get_first($item,'gtin',$g);
+  if ($gtin!=='') gcp_update_field_safe('gtin', $gtin, $post_id);
 
-  [$price_amount, $price_cur, $price_raw] = gcp_parse_price(gcp_get_first($item,'price',$g));
-  gcp_update_field_safe('price_raw', $price_raw, $post_id);
-  if ($price_amount!==null) gcp_update_field_safe('price_amount', $price_amount, $post_id);
-  if ($price_cur) gcp_update_field_safe('price_currency', $price_cur, $post_id);
+  $product_model = gcp_get_path($item, ['product_info','model_name']);
+  if ($product_model==='') $product_model = gcp_get_first($item,'mastercode');
+  if ($product_model!=='') gcp_update_field_safe('product_model_name', $product_model, $post_id);
+  $mastercode3 = gcp_get_path($item, ['product_info','product_3digit_mastercode']);
+  if ($mastercode3!=='') gcp_update_field_safe('product_3digit_mastercode', $mastercode3, $post_id);
 
-  gcp_update_field_safe('shipping_weight_kg', gcp_to_float(gcp_get_first($item,'shipping_weight',$g)), $post_id);
-  gcp_update_field_safe('length_cm', gcp_to_float(gcp_get_first($item,'product_length',$g)), $post_id);
-  gcp_update_field_safe('width_cm',  gcp_to_float(gcp_get_first($item,'product_width',$g)),  $post_id);
-  gcp_update_field_safe('height_cm', gcp_to_float(gcp_get_first($item,'product_height',$g)), $post_id);
-  gcp_update_field_safe('pallet_size', gcp_get_first($item,'product_pallet_size',$g), $post_id);
-  gcp_update_field_safe('warehouse', gcp_get_first($item,'cust_products_warehouse',$g), $post_id);
+  $source_link = gcp_get_first($item, 'link');
+  if ($source_link!=='') gcp_update_field_safe('source_link', $source_link, $post_id);
 
-  gcp_update_field_safe('google_active', gcp_true_false(gcp_get_first($item,'custom_google_shopping_active',$g)), $post_id);
-  gcp_update_field_safe('google_cat', gcp_get_first($item,'custom_google_shopping_product_cat',$g), $post_id);
-  gcp_update_field_safe('google_available_date', str_replace(['T','+00:00'],[' ', ''], gcp_get_first($item,'custom_google_shopping_availabledate',$g)), $post_id);
-  for ($i=1;$i<=6;$i++){
-    $tag = 'custom_google_shopping_versandpreis'.$i;
-    $fld = 'shipping_price_'.$i;
-    $val = gcp_to_float(gcp_get_first($item,$tag,$g));
-    if ($val!==null) gcp_update_field_safe($fld, $val, $post_id);
-  }
+  $category = trim(gcp_get_first($item, 'category'));
+  $series = trim(gcp_get_first($item, 'series'));
+  $categories_raw = trim(implode(' | ', array_filter([$category, $series])));
+  if ($categories_raw!=='') gcp_update_field_safe('categories_raw', $categories_raw, $post_id);
+  if ($category!=='') gcp_assign_simple_tax($post_id, 'product_category', $category);
+  if ($series!=='') gcp_assign_simple_tax($post_id, 'product_category', $series);
+
+  $product_group = gcp_get_path($item, ['product_info','product_group']);
+  if ($product_group!=='') gcp_assign_simple_tax($post_id, 'product_group', $product_group);
+
+  $ship_weight = gcp_get_path($item, ['shipping','shipping_weight'], $g);
+  $ship_weight_val = gcp_to_float($ship_weight);
+  if ($ship_weight_val!==null) gcp_update_field_safe('shipping_weight_kg', $ship_weight_val, $post_id);
+
+  $ship_len = gcp_to_float(gcp_get_path($item, ['shipping','product_length'], $g));
+  $ship_wid = gcp_to_float(gcp_get_path($item, ['shipping','product_width'], $g));
+  $ship_hei = gcp_to_float(gcp_get_path($item, ['shipping','product_height'], $g));
+  $ship_len = gcp_mm_to_cm($ship_len);
+  $ship_wid = gcp_mm_to_cm($ship_wid);
+  $ship_hei = gcp_mm_to_cm($ship_hei);
+  if ($ship_len!==null) gcp_update_field_safe('length_cm', $ship_len, $post_id);
+  if ($ship_wid!==null) gcp_update_field_safe('width_cm', $ship_wid, $post_id);
+  if ($ship_hei!==null) gcp_update_field_safe('height_cm', $ship_hei, $post_id);
+
+  $pallet = gcp_get_path($item, ['shipping','product_pallet_size']);
+  if ($pallet!=='') gcp_update_field_safe('pallet_size', $pallet, $post_id);
+  $warehouse = gcp_get_path($item, ['shipping','products_warehouse']);
+  if ($warehouse!=='') gcp_update_field_safe('warehouse', $warehouse, $post_id);
+
+  $shipment_40hq = gcp_to_float(gcp_get_path($item, ['shipping','shipping_amount_40fthq']));
+  if ($shipment_40hq!==null) gcp_update_field_safe('gc_shipment_storage_40fthqcon', $shipment_40hq, $post_id);
+
+  // No Google Shopping/price info in new XML structure
 
   // Images
   $img = gcp_get_first($item,'image_link',$g);
-  if ($img){ gcp_update_field_safe('featured_image_source_url', esc_url_raw($img), $post_id); if ($download_images) gcp_media_sideload_featured($img, $post_id); }
-  $add_imgs = array_merge(gcp_get_all($item,'additional_image_link'), gcp_get_all($item,'additional_image_link',$g));
+  if ($img==='') $img = gcp_get_first($item,'image_link');
+  if ($img){
+    gcp_update_field_safe('featured_image_source_url', esc_url_raw($img), $post_id);
+    if ($download_images) gcp_media_sideload_featured($img, $post_id);
+  }
+  $add_imgs = array_merge(
+    gcp_get_all($item,'additional_image_link'),
+    gcp_get_all($item,'additional_image_link',$g),
+    gcp_get_all_path($item, ['images','additional_image_link']),
+    gcp_get_all_path($item, ['images','additional_image_link'], $g)
+  );
   if ($add_imgs){
     $rows = [];
-    foreach ($add_imgs as $u){ $u = trim((string)$u); if ($u!=='') $rows[] = ['url'=>esc_url_raw($u)]; }
+    $seen = [];
+    foreach ($add_imgs as $u){
+      $u = trim((string)$u);
+      if ($u==='') continue;
+      if (isset($seen[$u])) continue;
+      $seen[$u] = true;
+      $url_out = $u;
+      if ($download_images){
+        $att_id = gcp_media_sideload_url($u, $post_id);
+        if ($att_id){
+          $att_url = wp_get_attachment_url($att_id);
+          if ($att_url) $url_out = $att_url;
+        }
+      }
+      $rows[] = ['url'=>esc_url_raw($url_out)];
+    }
     if ($rows) gcp_update_field_safe('additional_image_links', $rows, $post_id);
   }
 
   // Links & categories (raw)
-  gcp_update_field_safe('source_link', (string)$item->link, $post_id);
-  gcp_update_field_safe('categories_raw', gcp_get_first($item,'categories',$g) ?: (string)$item->categories, $post_id);
+  gcp_update_meta_raw($post_id, 'title_seo', gcp_get_first($item,'title_seo'));
+  gcp_update_meta_raw($post_id, 'intro', gcp_get_first($item,'intro'));
+  gcp_update_meta_raw($post_id, 'short_description', gcp_get_first($item,'short_description'));
+  gcp_update_meta_raw($post_id, 'legal_notice', gcp_get_first($item,'legal_notice'));
 
   // Model/master
-  gcp_update_field_safe('product_model_name', gcp_get_first($item,'product_model_name',$g), $post_id);
-  gcp_update_field_safe('product_3digit_mastercode', gcp_get_first($item,'product_3digit_mastercode',$g), $post_id);
+  $artno_list = gcp_get_text_list_path($item, ['artno_list','artno']);
+  if ($artno_list) gcp_update_meta_raw($post_id, 'artno_list', $artno_list);
 
   // Documents
-  gcp_update_field_safe('manual_document_url', gcp_get_first($item,'manualDocument',$g) ?: (string)$item->manualDocument, $post_id);
-  gcp_update_field_safe('datasheet_document_url', gcp_get_first($item,'datasheetDocument',$g) ?: (string)$item->datasheetDocument, $post_id);
+  $manual_url = gcp_pick_download_url($item, 'manual');
+  if ($manual_url!=='') gcp_update_field_safe('manual_document_url', $manual_url, $post_id);
+  $datasheet_url = gcp_pick_download_url($item, 'datasheet');
+  if ($datasheet_url!=='') gcp_update_field_safe('datasheet_document_url', $datasheet_url, $post_id);
 
   // Energy
-  gcp_update_field_safe('energy_label', gcp_get_first($item,'energylabel',$g), $post_id);
-  gcp_update_field_safe('energy_consumption_24h_raw', gcp_get_first($item,'energyconsumption',$g), $post_id);
-  $per_year = gcp_to_float(gcp_get_first($item,'energyconsumptionperyear',$g));
+  $energy_label = gcp_get_path($item, ['properties','properties_energylabel']);
+  if ($energy_label!=='') gcp_update_field_safe('energy_label', $energy_label, $post_id);
+  $energy_24h = gcp_get_path($item, ['properties','properties_energy_consumption']);
+  if ($energy_24h!=='') gcp_update_field_safe('energy_consumption_24h_raw', $energy_24h, $post_id);
+  $per_year = gcp_to_float(gcp_get_path($item, ['properties','properties_energy_consumption_year']));
   if ($per_year!==null) gcp_update_field_safe('energy_consumption_per_year', $per_year, $post_id);
-  gcp_update_field_safe('eei_raw', gcp_get_first($item,'eei',$g), $post_id);
-  gcp_update_field_safe('cust_gc_eprel', gcp_get_first($item,'cust_gc_eprel',$g), $post_id);
-  gcp_update_field_safe('energy_label_tooltip', gcp_get_first($item,'cust_energy_labeltooltip',$g), $post_id);
-  gcp_update_field_safe('energy_button_html', gcp_get_first($item,'cust_energy_button',$g), $post_id);
+  $eei = gcp_get_path($item, ['properties','properties_eei']);
+  if ($eei!=='') gcp_update_field_safe('eei_raw', $eei, $post_id);
+  $eprel = gcp_get_path($item, ['energy_label','eprel_code']);
+  if ($eprel!=='') gcp_update_field_safe('cust_gc_eprel', $eprel, $post_id);
+  $tooltip = gcp_get_path($item, ['energy_label','tooltip_url']);
+  if ($tooltip!=='') gcp_update_field_safe('energy_label_tooltip', $tooltip, $post_id);
+  $button_html = gcp_get_path($item, ['energy_label','button_html']);
+  if ($button_html!=='') gcp_update_field_safe('energy_button_html', $button_html, $post_id);
 
   // Technical
-  gcp_update_field_safe('doors', gcp_get_first($item,'doors',$g), $post_id);
-  gcp_update_field_safe('door_type', gcp_get_first($item,'doortype',$g), $post_id);
-  gcp_update_field_safe('reversible_door', gcp_get_first($item,'reversibledoor',$g), $post_id);
-  gcp_update_field_safe('interior_lighting', gcp_get_first($item,'interiorlighting',$g), $post_id);
-  gcp_update_field_safe('coolant', gcp_get_first($item,'coolant',$g), $post_id);
-  gcp_update_field_safe('functions', gcp_get_first($item,'functions',$g), $post_id);
-  gcp_update_field_safe('climate_class', gcp_get_first($item,'climateclass',$g), $post_id);
-  gcp_update_field_safe('controller', gcp_get_first($item,'controller',$g), $post_id);
-  gcp_update_field_safe('shelves_raw', gcp_get_first($item,'shelves',$g), $post_id);
-  gcp_update_field_safe('material_inside', gcp_get_first($item,'materialinside',$g), $post_id);
-  gcp_update_field_safe('electrical_connection', gcp_get_first($item,'electricalconnection',$g), $post_id);
+  $doors = gcp_get_path($item, ['properties','properties_doors']);
+  if ($doors!=='') gcp_update_field_safe('doors', $doors, $post_id);
+  $door_type = gcp_get_path($item, ['properties','properties_door_type']);
+  if ($door_type!=='') gcp_update_field_safe('door_type', $door_type, $post_id);
+  $reversible = gcp_get_path($item, ['properties','properties_reversible_door']);
+  if ($reversible!=='') gcp_update_field_safe('reversible_door', $reversible, $post_id);
+  $interior = gcp_get_path($item, ['properties','properties_interior_lighting']);
+  if ($interior!=='') gcp_update_field_safe('interior_lighting', $interior, $post_id);
+  $coolant = gcp_get_path($item, ['properties','properties_coolant']);
+  if ($coolant!=='') gcp_update_field_safe('coolant', $coolant, $post_id);
+  $functions = gcp_get_path($item, ['properties','properties_functions']);
+  if ($functions!=='') gcp_update_field_safe('functions', $functions, $post_id);
+  $climate = gcp_get_path($item, ['properties','properties_climate_class']);
+  if ($climate!=='') gcp_update_field_safe('climate_class', $climate, $post_id);
+  $controller = gcp_get_path($item, ['properties','properties_controller']);
+  if ($controller!=='') gcp_update_field_safe('controller', $controller, $post_id);
+  $shelves = gcp_get_path($item, ['properties','properties_shelves']);
+  if ($shelves!=='') gcp_update_field_safe('shelves_raw', $shelves, $post_id);
+  $material_inside = gcp_get_path($item, ['properties','properties_material_inside']);
+  if ($material_inside!=='') gcp_update_field_safe('material_inside', $material_inside, $post_id);
+  $electrical = gcp_get_path($item, ['properties','properties_electrical_connection']);
+  if ($electrical!=='') gcp_update_field_safe('electrical_connection', $electrical, $post_id);
 
   // Temps
-  gcp_update_field_safe('temperature_range_raw', gcp_get_first($item,'temperaturerange',$g), $post_id);
-  $tf = gcp_to_float(gcp_get_first($item,'tempfrom',$g)); if ($tf!==null) gcp_update_field_safe('temp_from_c', $tf, $post_id);
-  $tt = gcp_to_float(gcp_get_first($item,'temptill',$g)); if ($tt!==null) gcp_update_field_safe('temp_till_c', $tt, $post_id);
+  $temp_range = gcp_get_path($item, ['properties','properties_temperature_range']);
+  if ($temp_range!=='') gcp_update_field_safe('temperature_range_raw', $temp_range, $post_id);
+  $tf = gcp_to_float(gcp_get_path($item, ['properties','properties_temp_from']));
+  if ($tf!==null) gcp_update_field_safe('temp_from_c', $tf, $post_id);
+  $tt = gcp_to_float(gcp_get_path($item, ['properties','properties_temp_till']));
+  if ($tt!==null) gcp_update_field_safe('temp_till_c', $tt, $post_id);
 
   // Dimensions & volume
-  $wmm = gcp_to_float(gcp_get_first($item,'width',$g)); if ($wmm!==null) gcp_update_field_safe('width_mm', $wmm, $post_id);
-  $hmm = gcp_to_float(gcp_get_first($item,'height',$g)); if ($hmm!==null) gcp_update_field_safe('height_mm', $hmm, $post_id);
-  $dmm = gcp_to_float(gcp_get_first($item,'depth',$g)); if ($dmm!==null) gcp_update_field_safe('depth_mm', $dmm, $post_id);
-  gcp_update_field_safe('hxwxd_inside_raw', gcp_get_first($item,'hxwxdinside',$g), $post_id);
-  gcp_update_field_safe('hxwxd_outside_raw', gcp_get_first($item,'hxwxdoutside',$g), $post_id);
-  $vol_l = gcp_to_float(gcp_get_first($item,'volume',$g)); if ($vol_l!==null) gcp_update_field_safe('volume_l', $vol_l, $post_id);
-  gcp_update_field_safe('volume_raw', gcp_get_first($item,'volume',$g), $post_id);
+  $wmm = gcp_to_float(gcp_get_path($item, ['properties','properties_width']));
+  if ($wmm!==null) gcp_update_field_safe('width_mm', $wmm, $post_id);
+  $hmm = gcp_to_float(gcp_get_path($item, ['properties','properties_height']));
+  if ($hmm!==null) gcp_update_field_safe('height_mm', $hmm, $post_id);
+  $dmm = gcp_to_float(gcp_get_path($item, ['properties','properties_depth']));
+  if ($dmm!==null) gcp_update_field_safe('depth_mm', $dmm, $post_id);
+  $inside = gcp_get_path($item, ['properties','properties_insidemeasurements']);
+  if ($inside!=='') gcp_update_field_safe('hxwxd_inside_raw', $inside, $post_id);
+  $outside = gcp_get_path($item, ['properties','properties_outsidemeasurements']);
+  if ($outside!=='') gcp_update_field_safe('hxwxd_outside_raw', $outside, $post_id);
+  $vol_raw = gcp_get_path($item, ['properties','properties_volume']);
+  if ($vol_raw!=='') gcp_update_field_safe('volume_raw', $vol_raw, $post_id);
+  $vol_l = gcp_to_float($vol_raw);
+  if ($vol_l!==null) gcp_update_field_safe('volume_l', $vol_l, $post_id);
 
   // Weight & noise
-  $nw = gcp_to_float(gcp_get_first($item,'weight',$g)); if ($nw!==null) gcp_update_field_safe('net_weight_kg', $nw, $post_id);
-  gcp_update_field_safe('weight_raw', gcp_get_first($item,'weight',$g), $post_id);
-  $db = gcp_to_float(gcp_get_first($item,'noisevolume',$g)); if ($db!==null) gcp_update_field_safe('noise_volume_db', $db, $post_id);
+  $nw_raw = gcp_get_first($item,'product_weight');
+  $nw = gcp_to_float($nw_raw);
+  if ($nw!==null) gcp_update_field_safe('net_weight_kg', $nw, $post_id);
+  if ($nw_raw!=='') gcp_update_field_safe('weight_raw', $nw_raw, $post_id);
+  $db = gcp_to_float(gcp_get_path($item, ['properties','properties_noise_volume']));
+  if ($db!==null) gcp_update_field_safe('noise_volume_db', $db, $post_id);
 
   // Flags
-  gcp_update_field_safe('convection_cooling', gcp_true_false(gcp_get_first($item,'convectioncooling',$g) === 'Yes' ? '1' : gcp_get_first($item,'convectioncooling',$g)), $post_id);
-  gcp_update_field_safe('buildin', gcp_true_false(gcp_get_first($item,'buildin',$g) === 'Yes' ? '1' : gcp_get_first($item,'buildin',$g)), $post_id);
-  gcp_update_field_safe('cust_gc_bevcooler', gcp_true_false(gcp_get_first($item,'cust_gc_bevcooler',$g)), $post_id);
-  gcp_update_field_safe('cust_commercialuse', gcp_true_false(gcp_get_first($item,'cust_commercialuse',$g)), $post_id);
-  gcp_update_field_safe('cust_gc_freezer', gcp_true_false(gcp_get_first($item,'cust_gc_freezer',$g)), $post_id);
-  gcp_update_field_safe('cust_gc_householdapp', gcp_true_false(gcp_get_first($item,'cust_gc_householdapp',$g)), $post_id);
-  gcp_update_field_safe('cust_gc_product_capacity', gcp_true_false(gcp_get_first($item,'cust_gc_product_capacity',$g)), $post_id);
-  gcp_update_field_safe('cust_gc_product_capacity_cans', gcp_true_false(gcp_get_first($item,'cust_gc_product_capacity_cans',$g)), $post_id);
-  gcp_update_field_safe('cust_gc_product_capacity_bottles', gcp_true_false(gcp_get_first($item,'cust_gc_product_capacity_bottles',$g)), $post_id);
+  $conv = gcp_bool_from_text(gcp_get_path($item, ['properties','properties_convection_cooling']));
+  if ($conv!==null) gcp_update_field_safe('convection_cooling', $conv, $post_id);
+  $buildin = gcp_bool_from_text(gcp_get_path($item, ['properties','properties_buildin']));
+  if ($buildin!==null) gcp_update_field_safe('buildin', $buildin, $post_id);
+
+  $commercial = gcp_bool_from_text(gcp_get_path($item, ['usage_flags','commercial_use']));
+  if ($commercial!==null) gcp_update_field_safe('cust_commercialuse', $commercial, $post_id);
+  $household = gcp_bool_from_text(gcp_get_path($item, ['usage_flags','household_app']));
+  if ($household!==null) gcp_update_field_safe('cust_gc_householdapp', $household, $post_id);
+  $bevcooler = gcp_bool_from_text(gcp_get_path($item, ['usage_flags','beverage_cooler']));
+  if ($bevcooler!==null) gcp_update_field_safe('cust_gc_bevcooler', $bevcooler, $post_id);
 
   // Capacities
-  $cap_can_nodes = $item->children($g)->capacitycans;
-  if (isset($cap_can_nodes[0])){
-    $rows = [];
-    foreach ($cap_can_nodes as $n){ $t = trim((string)$n); if ($t!=='') $rows[] = ['text'=>$t]; }
-    if ($rows) gcp_update_field_safe('capacity_cans', $rows, $post_id);
+  $cap_cans_rows = [];
+  $cap_bottles_rows = [];
+  if (isset($item->capacities[0])){
+    foreach ($item->capacities->children() as $child){
+      $name = $child->getName();
+      $val = trim((string)$child);
+      if ($val==='') continue;
+      if (str_starts_with($name, 'cans_')) $cap_cans_rows[] = ['text'=>$val];
+      if (str_starts_with($name, 'bottles_')) $cap_bottles_rows[] = ['text'=>$val];
+    }
   }
-  $cap_bottle_nodes = $item->children($g)->capacitybottles;
-  if (isset($cap_bottle_nodes[0])){
-    $rows = [];
-    foreach ($cap_bottle_nodes as $n){ $t = trim((string)$n); if ($t!=='') $rows[] = ['text'=>$t]; }
-    if ($rows) gcp_update_field_safe('capacity_bottles', $rows, $post_id);
+  if ($cap_cans_rows) {
+    gcp_update_field_safe('capacity_cans', $cap_cans_rows, $post_id);
+    gcp_update_field_safe('cust_gc_product_capacity_cans', 1, $post_id);
   }
+  if ($cap_bottles_rows) {
+    gcp_update_field_safe('capacity_bottles', $cap_bottles_rows, $post_id);
+    gcp_update_field_safe('cust_gc_product_capacity_bottles', 1, $post_id);
+  }
+  if ($cap_cans_rows || $cap_bottles_rows) gcp_update_field_safe('cust_gc_product_capacity', 1, $post_id);
 
   // Shipping / storage
-  $hqc = gcp_to_float(gcp_get_first($item,'gc_shipment_storage_40fthqcon',$g));
-  if ($hqc!==null) gcp_update_field_safe('gc_shipment_storage_40fthqcon', $hqc, $post_id);
-  gcp_update_field_safe('dreisc_seo_sitemap_priority', gcp_get_first($item,'dreisc_seo_sitemap_priority',$g), $post_id);
-  gcp_update_field_safe('dreisc_seo_canonical_link_type', gcp_get_first($item,'dreisc_seo_canonical_link_type',$g), $post_id);
-  gcp_update_field_safe('dreisc_seo_canonical_link_reference', gcp_get_first($item,'dreisc_seo_canonical_link_reference',$g), $post_id);
+  // SEO fields not available in new XML
 
   // Taxonomies
-  $cat_raw = gcp_get_first($item,'categories',$g) ?: (string)$item->categories;
-  if ($cat_raw) gcp_assign_terms_from_categories($post_id, $cat_raw);
-  gcp_assign_simple_tax($post_id, 'product_group', gcp_get_first($item,'cust_product_group',$g));
-  $color = gcp_get_first($item,'color',$g) ?: (string)$item->color;
+  $color = gcp_get_path($item, ['properties','properties_color']);
   if ($color) gcp_assign_simple_tax($post_id, 'color', $color);
+
   $cert = $item->children($g)->certification;
+  if (! isset($cert[0]) && isset($item->certification[0])) $cert = $item->certification;
   if (isset($cert[0])){
-    $auth = (string)$cert->children($g)->certification_authority;
-    $name = (string)$cert->children($g)->certification_name;
-    $code = (string)$cert->children($g)->certification_code;
+    $auth = gcp_get_first($cert[0], 'certification_authority');
+    if ($auth==='') $auth = gcp_get_first($cert[0], 'certification_authority', $g);
+    $name = gcp_get_first($cert[0], 'certification_name');
+    if ($name==='') $name = gcp_get_first($cert[0], 'certification_name', $g);
+    $code = gcp_get_first($cert[0], 'certification_code');
+    if ($code==='') $code = gcp_get_first($cert[0], 'certification_code', $g);
     if ($auth || $name) gcp_assign_certification($post_id, $auth, $name, $code);
   }
+
+  // Rich lists and variants as raw meta
+  $use_cases = gcp_get_text_list_path($item, ['use_cases','use_case']);
+  if ($use_cases) gcp_update_meta_raw($post_id, 'use_cases', $use_cases);
+  $benefits = gcp_get_text_list_path($item, ['benefits','benefit']);
+  if ($benefits) gcp_update_meta_raw($post_id, 'benefits', $benefits);
+  $features = gcp_get_text_list_path($item, ['features','feature']);
+  if ($features) gcp_update_meta_raw($post_id, 'features', $features);
+  $variants = gcp_extract_variants($item);
+  if ($variants) gcp_update_meta_raw($post_id, 'variants', $variants);
+  $youtube_id = gcp_get_path($item, ['video','youtube_id']);
+  if ($youtube_id!=='') gcp_update_meta_raw($post_id, 'youtube_id', $youtube_id);
 }
 
 function gcp_import_odoo($file_path, $download_images = false){
