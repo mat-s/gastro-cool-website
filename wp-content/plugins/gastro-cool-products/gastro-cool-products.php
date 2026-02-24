@@ -312,6 +312,7 @@ add_action('plugins_loaded', function () {
   if (is_admin()) {
     require_once GCP_PLUGIN_DIR . 'includes/admin-import.php';
     require_once GCP_PLUGIN_DIR . 'includes/admin-columns.php';
+    require_once GCP_PLUGIN_DIR . 'includes/admin-media-filter.php';
   }
   // Elementor Skin: load after Elementor Pro initializes to avoid early autoload issues
   add_action('elementor_pro/init', function() {

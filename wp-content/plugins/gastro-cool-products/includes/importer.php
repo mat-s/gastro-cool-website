@@ -11,6 +11,74 @@ const GCP_MODEL_LIST = [
   'VICT50','VIRC330'
 ];
 
+// German category term (partial match) → English URL slug (for image path fallback)
+const GCP_CATEGORY_DE_EN = [
+  'Dosen Dispenser'           => 'can-dispenser-cooler',
+  'Dosenkühlschrank'          => 'can-cooler',
+  'Dosenspender'              => 'can-dispenser-cooler',
+  'Werbekühlschrank'          => 'display-cooler',
+  'Werbedisplaykühlschrank'   => 'display-cooler',
+  'Werbegefrierschrank'       => 'display-freezer',
+  'Werbegefriertruhe'         => 'display-freezer',
+  'Glastürkühlschrank'        => 'glass-door-cooler',
+  'Glastür-Kühlschrank'       => 'glass-door-cooler',
+  'Glastür Kühlschrank'       => 'glass-door-cooler',
+  'Glastür-Gefrierschrank'    => 'glass-door-freezer',
+  'Glastürgefriergerät'       => 'glass-door-freezer',
+  'Getränkekühlschrank'       => 'beverage-cooler',
+  'Flaschenkühlschrank'       => 'bottle-cooler',
+  'Weinkühlschrank'           => 'wine-cooler',
+  'Weindisplaykühlschrank'    => 'wine-display-cooler',
+  'Minikühlschrank'           => 'mini-cooler',
+  'Mini-Kühlschrank'          => 'mini-cooler',
+  'Thekenkühlschrank'         => 'countertop-cooler',
+  'KühlWürfel'                => 'cube-cooler',
+  'Kühlwürfel'                => 'cube-cooler',
+  'Bag-in-Box'                => 'bib-cooler',
+  'BIB-Kühlschrank'           => 'bib-cooler',
+  'BIB Kühlschrank'           => 'bib-cooler',
+  'Milchkühlschrank'          => 'milk-cooler',
+  'Tiefkühltruhe'             => 'chest-freezer',
+  'Kühltruhe'                 => 'chest-cooler',
+  'Gefriertruhe'              => 'chest-freezer',
+  'Runde Gefriertruhe'        => 'party-freezer',
+  'Gefrierschrank'            => 'upright-freezer',
+  'Party Freezer'             => 'party-freezer',
+  'Retro-Kühlschrank'         => 'retro-cooler',
+  'Retro Kühlschrank'         => 'retro-cooler',
+  'Vintage'                   => 'vintage-cooler',
+  'Bar-Kühlschrank'           => 'bar-cooler',
+  'POS-Kühlschrank'           => 'pos-cooler',
+  'Party Cooler'              => 'party-cooler',
+  'Einbaukühlschrank'         => 'built-in-cooler',
+];
+
+// Model name prefix → English URL slug (ultimate fallback when category missing)
+const GCP_MODEL_PREFIX_SLUG = [
+  'GCAP'  => 'can-dispenser-cooler',
+  'GCDC'  => 'display-cooler',
+  'GCPT'  => 'party-cooler',
+  'GCGD'  => 'glass-door-cooler',
+  'GCUC'  => 'undercounter-cooler',
+  'GCKW'  => 'cube-cooler',
+  'GCGW'  => 'cube-cooler',
+  'GCGF'  => 'glass-door-freezer',
+  'GCFC'  => 'chest-freezer',
+  'GCPF'  => 'party-freezer',
+  'GCBIB' => 'bib-cooler',
+  'GCBK'  => 'beverage-cooler',
+  'GCDF'  => 'display-freezer',
+  'VICT'  => 'vintage-cooler',
+  'VIRC'  => 'vintage-cooler',
+];
+
+// Known English detail keywords to extract from source URL filenames
+const GCP_IMAGE_KNOWN_DETAILS = [
+  'front','back','side','top','bottom','left','right',
+  'inside','interior','detail','hero','open','closed',
+  'empty','filled','overview','view',
+];
+
 function gcp_norm($s){
   $s = strtoupper((string)$s);
   return preg_replace('/[^A-Z0-9]+/','',$s);
@@ -282,6 +350,102 @@ function gcp_pick_download_url(SimpleXMLElement $item, $type){
   return '';
 }
 
+// ── Image path & naming helpers ───────────────────────────────────────────────
+
+function gcp_resolve_image_category_slug($product_group, $category, $model_name = ''){
+  // 1. product_group → already English for most values, slugify first segment
+  if ($product_group !== ''){
+    $first = trim(strstr($product_group, '/', true) ?: $product_group);
+    // Override the one German entry
+    if (mb_strtolower($first) === 'gewerblicher getränkekühlschrank'){
+      return 'commercial-beverage-cooler';
+    }
+    $slug = sanitize_title($first);
+    if ($slug !== '') return $slug;
+  }
+  // 2. German category term → mapping table (check first segment)
+  $cat_first = trim(strstr($category, '/', true) ?: $category);
+  foreach (GCP_CATEGORY_DE_EN as $de => $en){
+    if (mb_stripos($cat_first, $de) !== false) return $en;
+  }
+  // 3. Model name prefix → fixed slug
+  if ($model_name !== ''){
+    $m = strtoupper($model_name);
+    foreach (GCP_MODEL_PREFIX_SLUG as $prefix => $slug){
+      if (str_starts_with($m, $prefix)) return $slug;
+    }
+  }
+  return 'products';
+}
+
+function gcp_model_to_slug($model_name){
+  // "GCDC400 ECO STAR" → "gcdc400-eco-star"
+  return sanitize_title($model_name) ?: 'product';
+}
+
+function gcp_image_detail_from_url($src_url, $position){
+  // Try to detect a known English keyword at the end of the source filename
+  $filename = strtolower(pathinfo(parse_url($src_url, PHP_URL_PATH), PATHINFO_FILENAME));
+  foreach (GCP_IMAGE_KNOWN_DETAILS as $kw){
+    if (str_ends_with($filename, '-'.$kw) || str_ends_with($filename, '_'.$kw) || $filename === $kw){
+      return $kw;
+    }
+  }
+  // Positional fallback
+  return $position === 0 ? 'front' : 'detail-'.$position;
+}
+
+function gcp_build_product_image_basename($category_slug, $model_slug, $detail_slug){
+  return 'gastro-cool-'.$category_slug.'-'.$model_slug.'-'.$detail_slug;
+}
+
+function gcp_product_image_alt($post_id){
+  $model  = (string)get_post_meta($post_id, 'product_model_name', true);
+  if ($model === '') $model = get_the_title($post_id);
+  $groups = get_the_terms($post_id, 'product_group');
+  $group  = ($groups && !is_wp_error($groups)) ? $groups[0]->name : '';
+  $parts  = array_filter([$model, $group]);
+  return implode(' – ', $parts);
+}
+
+function gcp_media_sideload_product_img($src_url, $post_id, $new_basename, $alt_text, $subdir){
+  $src_url = trim((string)$src_url);
+  if ($src_url === '') return 0;
+  // Skip if already sideloaded from this source URL
+  $existing = gcp_find_attachment_by_source_url($src_url);
+  if ($existing) return $existing;
+
+  if (!function_exists('media_sideload_image'))  require_once ABSPATH.'wp-admin/includes/media.php';
+  if (!function_exists('download_url'))           require_once ABSPATH.'wp-admin/includes/file.php';
+  if (!function_exists('wp_read_image_metadata')) require_once ABSPATH.'wp-admin/includes/image.php';
+
+  $subdir  = '/'.trim($subdir, '/');
+  $dir_fn  = function($dirs) use ($subdir){
+    $dirs['subdir'] = $subdir;
+    $dirs['path']   = $dirs['basedir'].$subdir;
+    $dirs['url']    = $dirs['baseurl'].$subdir;
+    return $dirs;
+  };
+  $name_fn = function($filename) use ($new_basename){
+    $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+    return $new_basename.($ext ? '.'.$ext : '');
+  };
+
+  add_filter('upload_dir',        $dir_fn,  PHP_INT_MAX);
+  add_filter('sanitize_file_name', $name_fn, PHP_INT_MAX);
+
+  $att_id = media_sideload_image($src_url, $post_id, null, 'id');
+
+  remove_filter('upload_dir',        $dir_fn,  PHP_INT_MAX);
+  remove_filter('sanitize_file_name', $name_fn, PHP_INT_MAX);
+
+  if (is_wp_error($att_id)) return 0;
+  $att_id = (int)$att_id;
+  update_post_meta($att_id, 'gcp_source_url', $src_url);
+  if ($alt_text !== '') update_post_meta($att_id, '_wp_attachment_image_alt', $alt_text);
+  return $att_id;
+}
+
 function gcp_extract_variants(SimpleXMLElement $item){
   $out = [];
   $groups = $item->variants->variant_group ?? null;
@@ -349,9 +513,23 @@ function gcp_import_process_item(SimpleXMLElement $item, $download_images, &$cou
     $count_created++;
   }
 
+  // First variant – fallback for fields that moved into <variant> in the new XML structure
+  // (ean, link, g:image_link, images, shipping, product_weight, energy properties)
+  $variant0 = (isset($item->variants[0]) && isset($item->variants->variant[0]))
+    ? $item->variants->variant[0] : null;
+
+  // Helper: try properties_common (new XML) first, then properties (old XML)
+  $gp = function(string $key) use ($item): string {
+    $v = gcp_get_path($item, ['properties_common', $key]);
+    if ($v === '') $v = gcp_get_path($item, ['properties', $key]);
+    return $v;
+  };
+
   // ACF/meta mapping
   gcp_update_field_safe('external_id', $external_id, $post_id);
-  $gtin = gcp_get_first($item,'gtin',$g);
+  $gtin = gcp_get_first($item,'ean');
+  if ($gtin==='') $gtin = gcp_get_first($item,'gtin',$g);
+  if ($gtin==='' && $variant0) $gtin = gcp_get_first($variant0,'ean');
   if ($gtin!=='') gcp_update_field_safe('gtin', $gtin, $post_id);
 
   $product_model = gcp_get_path($item, ['product_info','model_name']);
@@ -361,6 +539,7 @@ function gcp_import_process_item(SimpleXMLElement $item, $download_images, &$cou
   if ($mastercode3!=='') gcp_update_field_safe('product_3digit_mastercode', $mastercode3, $post_id);
 
   $source_link = gcp_get_first($item, 'link');
+  if ($source_link==='' && $variant0) $source_link = gcp_get_first($variant0, 'link');
   if ($source_link!=='') gcp_update_field_safe('source_link', $source_link, $post_id);
 
   $category = trim(gcp_get_first($item, 'category'));
@@ -370,19 +549,40 @@ function gcp_import_process_item(SimpleXMLElement $item, $download_images, &$cou
   if ($category!=='') gcp_assign_simple_tax($post_id, 'product_category', $category);
   if ($series!=='') gcp_assign_simple_tax($post_id, 'product_category', $series);
 
+  $product_type = trim(gcp_get_first($item,'product_type',$g));
+  if ($product_type!==''){
+    if (str_starts_with($product_type,'Produkte')){
+      $tid = gcp_upsert_term_path('product_category', $product_type);
+      if ($tid) wp_set_object_terms($post_id, [$tid], 'product_category', true);
+    } elseif (str_starts_with($product_type,'Industrie')){
+      $tid = gcp_upsert_term_path('industry', $product_type);
+      if ($tid) wp_set_object_terms($post_id, [$tid], 'industry', true);
+    }
+  }
+
   $product_group = gcp_get_path($item, ['product_info','product_group']);
   if ($product_group!=='') gcp_assign_simple_tax($post_id, 'product_group', $product_group);
 
+  $brand = gcp_get_first($item,'brand',$g);
+  if ($brand==='') $brand = gcp_get_first($item,'brand');
+  if ($brand!=='') gcp_assign_simple_tax($post_id, 'brand', $brand);
+
+  // Shipping node: item-level first, fallback to first variant (new XML puts shipping inside variants)
+  $sn = ($variant0 && isset($variant0->shipping[0])) ? $variant0 : $item;
   $ship_weight = gcp_get_path($item, ['shipping','shipping_weight'], $g);
+  if ($ship_weight === '') $ship_weight = gcp_get_path($sn, ['shipping','shipping_weight'], $g);
   $ship_weight_val = gcp_to_float($ship_weight);
   if ($ship_weight_val!==null) gcp_update_field_safe('shipping_weight_kg', $ship_weight_val, $post_id);
 
-  $ship_len = gcp_to_float(gcp_get_path($item, ['shipping','product_length'], $g));
-  $ship_wid = gcp_to_float(gcp_get_path($item, ['shipping','product_width'], $g));
-  $ship_hei = gcp_to_float(gcp_get_path($item, ['shipping','product_height'], $g));
-  $ship_len = gcp_mm_to_cm($ship_len);
-  $ship_wid = gcp_mm_to_cm($ship_wid);
-  $ship_hei = gcp_mm_to_cm($ship_hei);
+  $ship_len_raw = gcp_get_path($item, ['shipping','product_length'], $g);
+  if ($ship_len_raw === '') $ship_len_raw = gcp_get_path($sn, ['shipping','product_length'], $g);
+  $ship_wid_raw = gcp_get_path($item, ['shipping','product_width'], $g);
+  if ($ship_wid_raw === '') $ship_wid_raw = gcp_get_path($sn, ['shipping','product_width'], $g);
+  $ship_hei_raw = gcp_get_path($item, ['shipping','product_height'], $g);
+  if ($ship_hei_raw === '') $ship_hei_raw = gcp_get_path($sn, ['shipping','product_height'], $g);
+  $ship_len = gcp_mm_to_cm(gcp_to_float($ship_len_raw));
+  $ship_wid = gcp_mm_to_cm(gcp_to_float($ship_wid_raw));
+  $ship_hei = gcp_mm_to_cm(gcp_to_float($ship_hei_raw));
   if ($ship_len!==null) gcp_update_field_safe('length_cm', $ship_len, $post_id);
   if ($ship_wid!==null) gcp_update_field_safe('width_cm', $ship_wid, $post_id);
   if ($ship_hei!==null) gcp_update_field_safe('height_cm', $ship_hei, $post_id);
@@ -397,36 +597,52 @@ function gcp_import_process_item(SimpleXMLElement $item, $download_images, &$cou
 
   // No Google Shopping/price info in new XML structure
 
-  // Images
+  // Images – resolve category/model slugs for structured naming
+  $img_cat_slug   = gcp_resolve_image_category_slug($product_group, $category, $product_model);
+  $img_model_slug = gcp_model_to_slug($product_model);
+  $img_subdir     = 'produkte/'.$img_cat_slug;
+  $img_alt        = gcp_product_image_alt($post_id);
+
   $img = gcp_get_first($item,'image_link',$g);
   if ($img==='') $img = gcp_get_first($item,'image_link');
+  if ($img==='' && $variant0) {
+    $img = gcp_get_first($variant0,'image_link',$g);
+    if ($img==='') $img = gcp_get_first($variant0,'image_link');
+  }
   if ($img){
     gcp_update_field_safe('featured_image_source_url', esc_url_raw($img), $post_id);
-    if ($download_images) gcp_media_sideload_featured($img, $post_id);
+    if ($download_images){
+      $basename = gcp_build_product_image_basename($img_cat_slug, $img_model_slug, 'front');
+      $att_id   = gcp_media_sideload_product_img($img, $post_id, $basename, $img_alt, $img_subdir);
+      if ($att_id) set_post_thumbnail($post_id, $att_id);
+    }
   }
-  $add_imgs = array_merge(
+  $add_imgs = array_unique(array_filter(array_map('trim', array_merge(
     gcp_get_all($item,'additional_image_link'),
     gcp_get_all($item,'additional_image_link',$g),
     gcp_get_all_path($item, ['images','additional_image_link']),
-    gcp_get_all_path($item, ['images','additional_image_link'], $g)
-  );
+    gcp_get_all_path($item, ['images','additional_image_link'], $g),
+    $variant0 ? gcp_get_all($variant0,'additional_image_link') : [],
+    $variant0 ? gcp_get_all($variant0,'additional_image_link',$g) : [],
+    $variant0 ? gcp_get_all_path($variant0, ['images','additional_image_link']) : [],
+    $variant0 ? gcp_get_all_path($variant0, ['images','additional_image_link'], $g) : []
+  ))));
   if ($add_imgs){
     $rows = [];
-    $seen = [];
+    $pos  = 1;
     foreach ($add_imgs as $u){
-      $u = trim((string)$u);
-      if ($u==='') continue;
-      if (isset($seen[$u])) continue;
-      $seen[$u] = true;
       $url_out = $u;
       if ($download_images){
-        $att_id = gcp_media_sideload_url($u, $post_id);
+        $detail   = gcp_image_detail_from_url($u, $pos);
+        $basename = gcp_build_product_image_basename($img_cat_slug, $img_model_slug, $detail);
+        $att_id   = gcp_media_sideload_product_img($u, $post_id, $basename, $img_alt, $img_subdir);
         if ($att_id){
           $att_url = wp_get_attachment_url($att_id);
           if ($att_url) $url_out = $att_url;
         }
       }
-      $rows[] = ['url'=>esc_url_raw($url_out)];
+      $rows[] = ['url' => esc_url_raw($url_out)];
+      $pos++;
     }
     if ($rows) gcp_update_field_safe('additional_image_links', $rows, $post_id);
   }
@@ -446,15 +662,37 @@ function gcp_import_process_item(SimpleXMLElement $item, $download_images, &$cou
   if ($manual_url!=='') gcp_update_field_safe('manual_document_url', $manual_url, $post_id);
   $datasheet_url = gcp_pick_download_url($item, 'datasheet');
   if ($datasheet_url!=='') gcp_update_field_safe('datasheet_document_url', $datasheet_url, $post_id);
+  $cad_rows = [];
+  if (isset($item->downloads[0]) && isset($item->downloads->cad_files[0])){
+    foreach ($item->downloads->cad_files->cad_file as $cad){
+      $cad_url = trim((string)$cad->file_url);
+      if ($cad_url==='') continue;
+      $cad_rows[] = [
+        'title'       => trim((string)$cad->title),
+        'url'         => esc_url_raw($cad_url),
+        'description' => trim((string)$cad->description),
+        'format'      => trim((string)$cad->format),
+      ];
+    }
+  }
+  if ($cad_rows) gcp_update_field_safe('cad_files', $cad_rows, $post_id);
 
-  // Energy
-  $energy_label = gcp_get_path($item, ['properties','properties_energylabel']);
+  // Energy – in new XML these are direct children of <variant>, not inside <properties>
+  $energy_label = $gp('properties_energylabel');
+  if ($energy_label==='' && $variant0) $energy_label = gcp_get_first($variant0,'properties_energylabel');
   if ($energy_label!=='') gcp_update_field_safe('energy_label', $energy_label, $post_id);
-  $energy_24h = gcp_get_path($item, ['properties','properties_energy_consumption']);
+
+  $energy_24h = $gp('properties_energy_consumption');
+  if ($energy_24h==='' && $variant0) $energy_24h = gcp_get_first($variant0,'properties_energy_consumption');
   if ($energy_24h!=='') gcp_update_field_safe('energy_consumption_24h_raw', $energy_24h, $post_id);
-  $per_year = gcp_to_float(gcp_get_path($item, ['properties','properties_energy_consumption_year']));
+
+  $per_year_raw = $gp('properties_energy_consumption_year');
+  if ($per_year_raw==='' && $variant0) $per_year_raw = gcp_get_first($variant0,'properties_energy_consumption_year');
+  $per_year = gcp_to_float($per_year_raw);
   if ($per_year!==null) gcp_update_field_safe('energy_consumption_per_year', $per_year, $post_id);
-  $eei = gcp_get_path($item, ['properties','properties_eei']);
+
+  $eei = $gp('properties_eei');
+  if ($eei==='' && $variant0) $eei = gcp_get_first($variant0,'properties_eei');
   if ($eei!=='') gcp_update_field_safe('eei_raw', $eei, $post_id);
   $eprel = gcp_get_path($item, ['energy_label','eprel_code']);
   if ($eprel!=='') gcp_update_field_safe('cust_gc_eprel', $eprel, $post_id);
@@ -464,55 +702,56 @@ function gcp_import_process_item(SimpleXMLElement $item, $download_images, &$cou
   if ($button_html!=='') gcp_update_field_safe('energy_button_html', $button_html, $post_id);
 
   // Technical
-  $doors = gcp_get_path($item, ['properties','properties_doors']);
+  $doors = $gp('properties_doors');
   if ($doors!=='') gcp_update_field_safe('doors', $doors, $post_id);
-  $door_type = gcp_get_path($item, ['properties','properties_door_type']);
+  $door_type = $gp('properties_door_type');
   if ($door_type!=='') gcp_update_field_safe('door_type', $door_type, $post_id);
-  $reversible = gcp_get_path($item, ['properties','properties_reversible_door']);
+  $reversible = $gp('properties_reversible_door');
   if ($reversible!=='') gcp_update_field_safe('reversible_door', $reversible, $post_id);
-  $interior = gcp_get_path($item, ['properties','properties_interior_lighting']);
+  $interior = $gp('properties_interior_lighting');
   if ($interior!=='') gcp_update_field_safe('interior_lighting', $interior, $post_id);
-  $coolant = gcp_get_path($item, ['properties','properties_coolant']);
+  $coolant = $gp('properties_coolant');
   if ($coolant!=='') gcp_update_field_safe('coolant', $coolant, $post_id);
-  $functions = gcp_get_path($item, ['properties','properties_functions']);
+  $functions = $gp('properties_functions');
   if ($functions!=='') gcp_update_field_safe('functions', $functions, $post_id);
-  $climate = gcp_get_path($item, ['properties','properties_climate_class']);
+  $climate = $gp('properties_climate_class');
   if ($climate!=='') gcp_update_field_safe('climate_class', $climate, $post_id);
-  $controller = gcp_get_path($item, ['properties','properties_controller']);
+  $controller = $gp('properties_controller');
   if ($controller!=='') gcp_update_field_safe('controller', $controller, $post_id);
-  $shelves = gcp_get_path($item, ['properties','properties_shelves']);
+  $shelves = $gp('properties_shelves');
   if ($shelves!=='') gcp_update_field_safe('shelves_raw', $shelves, $post_id);
-  $material_inside = gcp_get_path($item, ['properties','properties_material_inside']);
+  $material_inside = $gp('properties_material_inside');
   if ($material_inside!=='') gcp_update_field_safe('material_inside', $material_inside, $post_id);
-  $electrical = gcp_get_path($item, ['properties','properties_electrical_connection']);
+  $electrical = $gp('properties_electrical_connection');
   if ($electrical!=='') gcp_update_field_safe('electrical_connection', $electrical, $post_id);
 
   // Temps
-  $temp_range = gcp_get_path($item, ['properties','properties_temperature_range']);
+  $temp_range = $gp('properties_temperature_range');
   if ($temp_range!=='') gcp_update_field_safe('temperature_range_raw', $temp_range, $post_id);
-  $tf = gcp_to_float(gcp_get_path($item, ['properties','properties_temp_from']));
+  $tf = gcp_to_float($gp('properties_temp_from'));
   if ($tf!==null) gcp_update_field_safe('temp_from_c', $tf, $post_id);
-  $tt = gcp_to_float(gcp_get_path($item, ['properties','properties_temp_till']));
+  $tt = gcp_to_float($gp('properties_temp_till'));
   if ($tt!==null) gcp_update_field_safe('temp_till_c', $tt, $post_id);
 
   // Dimensions & volume
-  $wmm = gcp_to_float(gcp_get_path($item, ['properties','properties_width']));
+  $wmm = gcp_to_float($gp('properties_width'));
   if ($wmm!==null) gcp_update_field_safe('width_mm', $wmm, $post_id);
-  $hmm = gcp_to_float(gcp_get_path($item, ['properties','properties_height']));
+  $hmm = gcp_to_float($gp('properties_height'));
   if ($hmm!==null) gcp_update_field_safe('height_mm', $hmm, $post_id);
-  $dmm = gcp_to_float(gcp_get_path($item, ['properties','properties_depth']));
+  $dmm = gcp_to_float($gp('properties_depth'));
   if ($dmm!==null) gcp_update_field_safe('depth_mm', $dmm, $post_id);
-  $inside = gcp_get_path($item, ['properties','properties_insidemeasurements']);
+  $inside = $gp('properties_insidemeasurements');
   if ($inside!=='') gcp_update_field_safe('hxwxd_inside_raw', $inside, $post_id);
-  $outside = gcp_get_path($item, ['properties','properties_outsidemeasurements']);
+  $outside = $gp('properties_outsidemeasurements');
   if ($outside!=='') gcp_update_field_safe('hxwxd_outside_raw', $outside, $post_id);
-  $vol_raw = gcp_get_path($item, ['properties','properties_volume']);
+  $vol_raw = $gp('properties_volume');
   if ($vol_raw!=='') gcp_update_field_safe('volume_raw', $vol_raw, $post_id);
   $vol_l = gcp_to_float($vol_raw);
   if ($vol_l!==null) gcp_update_field_safe('volume_l', $vol_l, $post_id);
 
   // Weight & noise
   $nw_raw = gcp_get_first($item,'product_weight');
+  if ($nw_raw==='' && $variant0) $nw_raw = gcp_get_first($variant0,'product_weight');
   $nw = gcp_to_float($nw_raw);
   if ($nw!==null) gcp_update_field_safe('net_weight_kg', $nw, $post_id);
   if ($nw_raw!=='') gcp_update_field_safe('weight_raw', $nw_raw, $post_id);
@@ -520,9 +759,9 @@ function gcp_import_process_item(SimpleXMLElement $item, $download_images, &$cou
   if ($db!==null) gcp_update_field_safe('noise_volume_db', $db, $post_id);
 
   // Flags
-  $conv = gcp_bool_from_text(gcp_get_path($item, ['properties','properties_convection_cooling']));
-  if ($conv!==null) gcp_update_field_safe('convection_cooling', $conv, $post_id);
-  $buildin = gcp_bool_from_text(gcp_get_path($item, ['properties','properties_buildin']));
+  $conv = trim($gp('properties_convection_cooling'));
+  if ($conv!=='') gcp_update_field_safe('convection_cooling', $conv, $post_id);
+  $buildin = gcp_bool_from_text($gp('properties_buildin'));
   if ($buildin!==null) gcp_update_field_safe('buildin', $buildin, $post_id);
 
   $commercial = gcp_bool_from_text(gcp_get_path($item, ['usage_flags','commercial_use']));
@@ -558,7 +797,7 @@ function gcp_import_process_item(SimpleXMLElement $item, $download_images, &$cou
   // SEO fields not available in new XML
 
   // Taxonomies
-  $color = gcp_get_path($item, ['properties','properties_color']);
+  $color = $gp('properties_color');
   if ($color) gcp_assign_simple_tax($post_id, 'color', $color);
 
   $cert = $item->children($g)->certification;
@@ -622,6 +861,41 @@ function gcp_import_odoo($file_path, $download_images = false){
     'skipped' => $skipped,
   ];
 }
+
+// ── Custom upload directory for product images (manual backend uploads) ───────
+// Applies only when uploading a media file while editing a product post.
+// Directory: /wp-content/uploads/produkte/[category-slug]/
+add_filter('upload_dir', function($dirs){
+  if (!is_admin()) return $dirs;
+  $post_id = (int)($_REQUEST['post_id'] ?? 0);
+  if (!$post_id || get_post_type($post_id) !== 'product') return $dirs;
+
+  $groups   = get_the_terms($post_id, 'product_group');
+  $pg       = ($groups && !is_wp_error($groups)) ? $groups[0]->name : '';
+  $cats     = get_the_terms($post_id, 'product_category');
+  $cat      = ($cats && !is_wp_error($cats)) ? $cats[0]->name : '';
+  $model    = (string)get_post_meta($post_id, 'product_model_name', true);
+  $cat_slug = gcp_resolve_image_category_slug($pg, $cat, $model);
+
+  $subdir = '/produkte/'.$cat_slug;
+  $dirs['subdir'] = $subdir;
+  $dirs['path']   = $dirs['basedir'].$subdir;
+  $dirs['url']    = $dirs['baseurl'].$subdir;
+  return $dirs;
+}, 20);
+
+// ── Alt-text after ACF save (manual product edits in backend) ─────────────────
+// Fires after ACF fields are committed to DB (priority 20).
+// Sets the alt-text on the featured image if it is still empty.
+add_action('acf/save_post', function($post_id){
+  if (get_post_type($post_id) !== 'product') return;
+  $alt     = gcp_product_image_alt($post_id);
+  if ($alt === '') return;
+  $thumb   = get_post_thumbnail_id($post_id);
+  if ($thumb && get_post_meta($thumb, '_wp_attachment_image_alt', true) === ''){
+    update_post_meta($thumb, '_wp_attachment_image_alt', $alt);
+  }
+}, 20);
 
 // Expose as WP-CLI command: wp gcp import-odoo --file=path --download-images=1
 if (defined('WP_CLI') && WP_CLI) {

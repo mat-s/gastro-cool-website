@@ -57,6 +57,12 @@ add_action('acf/init', function () {
       [ 'key' => 'tab_documents', 'label' => 'Dokumente', 'type' => 'tab' ],
       [ 'key' => 'field_manual_document_url','label' => 'Manual Document URL','name' => 'manual_document_url','type' => 'url', 'instructions' => 'Link to the product manual (PDF).', 'wrapper' => ['width' => '50'] ],
       [ 'key' => 'field_datasheet_document_url','label' => 'Datasheet Document URL','name' => 'datasheet_document_url','type' => 'url', 'instructions' => 'Link to the product datasheet (PDF).', 'wrapper' => ['width' => '50'] ],
+      [ 'key' => 'field_cad_files','label' => 'CAD Files','name' => 'cad_files','type' => 'repeater','layout' => 'table','button_label' => 'Add CAD File','instructions' => 'CAD download files from feed.', 'sub_fields' => [
+        [ 'key' => 'field_cad_file_title','label' => 'Title','name' => 'title','type' => 'text' ],
+        [ 'key' => 'field_cad_file_url','label' => 'URL','name' => 'url','type' => 'url' ],
+        [ 'key' => 'field_cad_file_description','label' => 'Description','name' => 'description','type' => 'text' ],
+        [ 'key' => 'field_cad_file_format','label' => 'Format','name' => 'format','type' => 'text' ],
+      ] ],
 
       [ 'key' => 'tab_energy', 'label' => 'Energie & Compliance', 'type' => 'tab' ],
       [ 'key' => 'field_energy_label','label' => 'Energy Label','name' => 'energy_label','type' => 'text', 'instructions' => 'Energy efficiency label (A–G).', 'wrapper' => ['width' => '20'] ],
@@ -100,7 +106,7 @@ add_action('acf/init', function () {
       [ 'key' => 'field_noise_volume_db','label' => 'Noise Volume (dB)','name' => 'noise_volume_db','type' => 'number','step' => 0.1, 'instructions' => 'Noise level in dB.', 'wrapper' => ['width' => '33.3'] ],
 
       [ 'key' => 'tab_flags', 'label' => 'Funktionen / Flags', 'type' => 'tab' ],
-      [ 'key' => 'field_convection_cooling','label' => 'Convection Cooling','name' => 'convection_cooling','type' => 'true_false','ui' => 1, 'instructions' => 'Enable if device has convection cooling.', 'wrapper' => ['width' => '25'] ],
+      [ 'key' => 'field_convection_cooling','label' => 'Convection Cooling','name' => 'convection_cooling','type' => 'text', 'instructions' => 'Raw value from feed (e.g., Ja, Nein, Umluftkühlung, Ja (2 Ventilatoren)).', 'wrapper' => ['width' => '25'] ],
       [ 'key' => 'field_buildin','label' => 'Built-in','name' => 'buildin','type' => 'true_false','ui' => 1, 'instructions' => 'Enable if product is built-in capable.', 'wrapper' => ['width' => '25'] ],
       [ 'key' => 'field_cust_gc_bevcooler','label' => 'Beverage Cooler Flag','name' => 'cust_gc_bevcooler','type' => 'true_false','ui' => 1, 'instructions' => 'Enable if item is a beverage cooler.', 'wrapper' => ['width' => '25'] ],
       [ 'key' => 'field_cust_commercialuse','label' => 'Commercial Use Flag','name' => 'cust_commercialuse','type' => 'true_false','ui' => 1, 'instructions' => 'Enable if for commercial use only.', 'wrapper' => ['width' => '25'] ],

@@ -32,29 +32,47 @@ function gcp_render_odoo_import_page()
       if ($file['error'] !== UPLOAD_ERR_OK) {
         $error = sprintf(__('Upload error: %s', 'gastro-cool-products'), (int)$file['error']);
       } else {
-        // Only allow XML mime types
-        $overrides = [
-          'test_form' => false,
-          'mimes' => [
-            // Allow common XML variants
-            'xml'  => 'text/xml',
-            'rss'  => 'application/rss+xml',
-            'atom' => 'application/atom+xml',
-          ],
-        ];
-        $uploaded = wp_handle_upload($file, $overrides);
-        if (isset($uploaded['error'])) {
-          $error = $uploaded['error'];
+        // Validate extension manually – bypasses WP media MIME checks
+        // (wp_handle_upload blocks XML in modern WP regardless of $overrides)
+        $original_name = isset($file['name']) ? $file['name'] : '';
+        $ext = strtolower(pathinfo($original_name, PATHINFO_EXTENSION));
+        if ($ext !== 'xml') {
+          $error = __('Only .xml files are allowed.', 'gastro-cool-products');
         } else {
-          $xml_path = $uploaded['file'];
-          if (! function_exists('gcp_import_odoo')) {
-            require_once plugin_dir_path(__FILE__) . 'importer.php';
-          }
-          $res = gcp_import_odoo($xml_path, $download_images);
-          if (is_wp_error($res)) {
-            $error = $res->get_error_message();
+          $upload_dir = wp_upload_dir();
+          $tmp_dest = $upload_dir['basedir'] . '/gcp-import-' . time() . '.xml';
+          if (! move_uploaded_file($file['tmp_name'], $tmp_dest)) {
+            $error = __('Could not save uploaded file. Check upload directory permissions.', 'gastro-cool-products');
           } else {
-            $result = $res;
+            // Strip UTF-8 BOM if present (XMLReader chokes on BOM before <?xml)
+            $raw = file_get_contents($tmp_dest, false, null, 0, 3);
+            if ($raw === "\xEF\xBB\xBF") {
+              $content = file_get_contents($tmp_dest);
+              file_put_contents($tmp_dest, substr($content, 3));
+            }
+            // Inject g: namespace declaration on root element if missing.
+            // XMLReader requires declared namespaces before readOuterXml() is called.
+            $header = file_get_contents($tmp_dest, false, null, 0, 512);
+            if (strpos($header, 'xmlns:g=') === false) {
+              $content = file_get_contents($tmp_dest);
+              $content = preg_replace(
+                '/(<[a-zA-Z][a-zA-Z0-9_-]*)(\s|>)/',
+                '$1 xmlns:g="http://base.google.com/ns/1.0"$2',
+                $content,
+                1
+              );
+              file_put_contents($tmp_dest, $content);
+            }
+            if (! function_exists('gcp_import_odoo')) {
+              require_once plugin_dir_path(__FILE__) . 'importer.php';
+            }
+            $res = gcp_import_odoo($tmp_dest, $download_images);
+            @unlink($tmp_dest); // clean up temp file regardless of result
+            if (is_wp_error($res)) {
+              $error = $res->get_error_message();
+            } else {
+              $result = $res;
+            }
           }
         }
       }
