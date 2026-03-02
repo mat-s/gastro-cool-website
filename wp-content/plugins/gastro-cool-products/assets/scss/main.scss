@@ -1,0 +1,17 @@
+// GastroCool Products Plugin – compiled SCSS bundle
+// Output: assets/css/plugin.css
+
+// Inquiry overlay (slide-in panel + button badge)
+@use "inquiry-overlay";
+
+// Inquiry widgets
+@use "inquiry-list";
+@use "inquiry-form";
+
+// Products grid skin
+@use "products-grid";
+
+// Custom Elementor widgets
+@use "label-list";
+@use "taxonomy-labels";
+@use "spec-list.scss";

@@ -326,9 +326,15 @@ add_action('plugins_loaded', function () {
     require_once GCP_PLUGIN_DIR . 'elementor-widgets/inquiry-button.php';
     require_once GCP_PLUGIN_DIR . 'elementor-widgets/inquiry-list.php';
     require_once GCP_PLUGIN_DIR . 'elementor-widgets/inquiry-form.php';
+    require_once GCP_PLUGIN_DIR . 'elementor-widgets/label-list.php';
+    require_once GCP_PLUGIN_DIR . 'elementor-widgets/taxonomy-labels.php';
+    require_once GCP_PLUGIN_DIR . 'elementor-widgets/spec-list.php';
     $widgets_manager->register( new \GCP\Elementor\Widgets\Inquiry_Button_Widget() );
     $widgets_manager->register( new \GCP\Elementor\Widgets\Inquiry_List_Widget() );
     $widgets_manager->register( new \GCP\Elementor\Widgets\Inquiry_Form_Widget() );
+    $widgets_manager->register( new \GCP\Elementor\Widgets\Label_List_Widget() );
+    $widgets_manager->register( new \GCP\Elementor\Widgets\Taxonomy_Labels_Widget() );
+    $widgets_manager->register( new \GCP\Elementor\Widgets\Spec_List_Widget() );
   });
   // Register widget-specific assets
   add_action('elementor/frontend/after_register_scripts', function() {
@@ -348,24 +354,20 @@ add_action('plugins_loaded', function () {
     );
   });
   add_action('elementor/frontend/after_register_styles', function() {
-    wp_register_style(
-      'gcp-inquiry-list-widget',
-      plugins_url('assets/css/inquiry-list.css', __FILE__),
-      [],
-      GCP_VERSION
-    );
-    wp_register_style(
-      'gcp-inquiry-form-widget',
-      plugins_url('assets/css/inquiry-form.css', __FILE__),
-      [],
-      GCP_VERSION
-    );
+    // All plugin styles are bundled into plugin.css
+    $plugin_css = plugins_url('assets/css/plugin.css', __FILE__);
+    wp_register_style('gcp-plugin',                 $plugin_css, [], GCP_VERSION);
+    wp_register_style('gcp-inquiry-list-widget',    $plugin_css, [], GCP_VERSION);
+    wp_register_style('gcp-inquiry-form-widget',    $plugin_css, [], GCP_VERSION);
+    wp_register_style('gcp-label-list-widget',      $plugin_css, [], GCP_VERSION);
+    wp_register_style('gcp-taxonomy-labels-widget', $plugin_css, [], GCP_VERSION);
+    wp_register_style('gcp-spec-list-widget',       $plugin_css, [], GCP_VERSION);
   });
   // Enqueue skin styles and inquiry script on frontend
   add_action('wp_enqueue_scripts', function(){
     wp_enqueue_style(
-      'gcp-products-grid',
-      plugins_url('assets/css/products-grid.css', __FILE__),
+      'gcp-plugin',
+      plugins_url('assets/css/plugin.css', __FILE__),
       [],
       GCP_VERSION
     );

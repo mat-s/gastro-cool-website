@@ -1,0 +1,52 @@
+@use 'sass:map';
+
+.gc-tax-labels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin: 0.4rem 0;
+  padding: 0;
+}
+
+.gc-tax-label {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid #93c5fd;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.4;
+  white-space: nowrap;
+  text-decoration: none;
+  color: #1d4ed8;
+  background-color: #eff6ff;
+  
+  transition:
+    border-color 0.15s ease,
+    color 0.15s ease,
+    background-color 0.15s ease;
+
+  // Hover only when rendered as a link
+  a#{&}:hover {
+    opacity: 0.75;
+    text-decoration: none;
+  }
+}
+
+// Solid-Variante: gefülltes Dunkelblau
+.gc-tax-labels--solid {
+  .gc-tax-label {
+    background: var(--e-global-color-primary, #00486f);
+    color: #fff;
+    border-color: transparent;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  a.gc-tax-label:hover {
+    opacity: 0.85;
+    text-decoration: none;
+  }
+}

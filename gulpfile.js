@@ -40,9 +40,9 @@ const paths = {
 const pluginPaths = {
   scss: {
     src: 'wp-content/plugins/gastro-cool-products/assets/scss/**/*.scss',
-    main: 'wp-content/plugins/gastro-cool-products/assets/scss/products-grid.scss',
+    main: 'wp-content/plugins/gastro-cool-products/assets/scss/main.scss',
     dest: 'wp-content/plugins/gastro-cool-products/assets/css/',
-    outFile: 'products-grid.css'
+    outFile: 'plugin.css'
   }
 };
 

@@ -546,6 +546,7 @@ function gcp_import_process_item(SimpleXMLElement $item, $download_images, &$cou
   $series = trim(gcp_get_first($item, 'series'));
   $categories_raw = trim(implode(' | ', array_filter([$category, $series])));
   if ($categories_raw!=='') gcp_update_field_safe('categories_raw', $categories_raw, $post_id);
+  if ($series!=='') gcp_update_field_safe('series', $series, $post_id);
   if ($category!=='') gcp_assign_simple_tax($post_id, 'product_category', $category);
   if ($series!=='') gcp_assign_simple_tax($post_id, 'product_category', $series);
 

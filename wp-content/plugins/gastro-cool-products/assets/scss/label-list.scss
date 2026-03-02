@@ -1,0 +1,56 @@
+.gc-labels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin: 0.4rem 0;
+  padding: 0;
+}
+
+.gc-label {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid #E9EAEB;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 13px;
+  line-height: 1.4;
+  background: #FAFAFA;
+  color: #414651;
+  text-decoration: none;
+  white-space: nowrap;
+  transition:
+    border-color 0.2s ease,
+    color 0.2s ease,
+    background 0.2s ease;
+
+  // Hover nur wenn es ein Link ist
+  a#{&}:hover {
+    border-color: #00b2c6;
+    color: #00b2c6;
+    text-decoration: none;
+  }
+
+  &__prefix {
+    color: #414651;
+    opacity: 0.7;
+    font-weight: 400;
+
+    // Prefix-Farbe im Highlight-Modifier
+    .gc-label--highlight & {
+      color: var(--e-global-color-primary);
+    }
+  }
+
+  &__value {
+    color: inherit;
+    font-weight: 500;
+  }
+
+  // Hervorgehobener Stil (blau)
+  &--highlight {
+    border-color: #b8d3e8;
+    background: #eef4fb;
+    color: var(--e-global-color-primary);
+  }
+}
