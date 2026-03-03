@@ -640,18 +640,18 @@ function gcp_import_process_item(SimpleXMLElement $item, $download_images, &$cou
     $variant0 ? gcp_get_all_path($variant0, ['images','additional_image_link'], $g) : []
   ))));
   if ($add_imgs){
-    $rows = [];
-    $pos  = 1;
+    $ids = [];
+    $pos = 1;
     foreach ($add_imgs as $u){
       $detail   = gcp_image_detail_from_url($u, $pos);
       $basename = gcp_build_product_image_basename($img_cat_slug, $img_model_slug, $detail);
       $att_id   = gcp_media_sideload_product_img($u, $post_id, $basename, $img_alt, $img_subdir);
       if ($att_id){
-        $rows[] = ['image' => $att_id];
+        $ids[] = $att_id;
       }
       $pos++;
     }
-    if ($rows) gcp_update_field_safe('additional_image_links', $rows, $post_id);
+    if ($ids) gcp_update_field_safe('additional_image_links', $ids, $post_id);
   }
 
   // Links & categories (raw)
