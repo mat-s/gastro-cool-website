@@ -494,9 +494,20 @@ function gcp_import_process_item(SimpleXMLElement $item, $download_images, &$cou
   $title = gcp_get_first($item, 'product_name');
   if ($title==='') $title = gcp_get_first($item, 'title_seo');
   if ($title==='') $title = gcp_get_first($item, 'title');
-  $desc = gcp_get_first($item, 'description_long');
-  if ($desc==='') $desc = gcp_get_first($item, 'intro');
-  $desc = html_entity_decode((string)$desc);
+  // description_long kann verschachteltes HTML (<p>, <strong> …) enthalten.
+  // (string)-Cast auf SimpleXMLElement liefert in dem Fall einen leeren String,
+  // weil PHP nur direkte Textknoten liest. Stattdessen inneres HTML via DOM holen.
+  $desc = '';
+  if (isset($item->description_long[0])) {
+    $dom  = dom_import_simplexml($item->description_long[0]);
+    $desc = '';
+    foreach ($dom->childNodes as $child) {
+      $desc .= $dom->ownerDocument->saveHTML($child);
+    }
+    $desc = trim($desc);
+  }
+  if ($desc === '') $desc = gcp_get_first($item, 'intro');
+  $desc = html_entity_decode($desc);
   $excerpt = gcp_get_first($item, 'short_description');
   if ($excerpt==='') $excerpt = gcp_get_first($item, 'intro');
 
@@ -611,11 +622,11 @@ function gcp_import_process_item(SimpleXMLElement $item, $download_images, &$cou
     if ($img==='') $img = gcp_get_first($variant0,'image_link');
   }
   if ($img){
-    gcp_update_field_safe('featured_image_source_url', esc_url_raw($img), $post_id);
-    if ($download_images){
-      $basename = gcp_build_product_image_basename($img_cat_slug, $img_model_slug, 'front');
-      $att_id   = gcp_media_sideload_product_img($img, $post_id, $basename, $img_alt, $img_subdir);
-      if ($att_id) set_post_thumbnail($post_id, $att_id);
+    $basename = gcp_build_product_image_basename($img_cat_slug, $img_model_slug, 'front');
+    $att_id   = gcp_media_sideload_product_img($img, $post_id, $basename, $img_alt, $img_subdir);
+    if ($att_id){
+      set_post_thumbnail($post_id, $att_id);
+      gcp_update_field_safe('featured_image_source_url', $att_id, $post_id);
     }
   }
   $add_imgs = array_unique(array_filter(array_map('trim', array_merge(
@@ -632,17 +643,12 @@ function gcp_import_process_item(SimpleXMLElement $item, $download_images, &$cou
     $rows = [];
     $pos  = 1;
     foreach ($add_imgs as $u){
-      $url_out = $u;
-      if ($download_images){
-        $detail   = gcp_image_detail_from_url($u, $pos);
-        $basename = gcp_build_product_image_basename($img_cat_slug, $img_model_slug, $detail);
-        $att_id   = gcp_media_sideload_product_img($u, $post_id, $basename, $img_alt, $img_subdir);
-        if ($att_id){
-          $att_url = wp_get_attachment_url($att_id);
-          if ($att_url) $url_out = $att_url;
-        }
+      $detail   = gcp_image_detail_from_url($u, $pos);
+      $basename = gcp_build_product_image_basename($img_cat_slug, $img_model_slug, $detail);
+      $att_id   = gcp_media_sideload_product_img($u, $post_id, $basename, $img_alt, $img_subdir);
+      if ($att_id){
+        $rows[] = ['image' => $att_id];
       }
-      $rows[] = ['url' => esc_url_raw($url_out)];
       $pos++;
     }
     if ($rows) gcp_update_field_safe('additional_image_links', $rows, $post_id);
@@ -816,10 +822,16 @@ function gcp_import_process_item(SimpleXMLElement $item, $download_images, &$cou
   // Rich lists and variants as raw meta
   $use_cases = gcp_get_text_list_path($item, ['use_cases','use_case']);
   if ($use_cases) gcp_update_meta_raw($post_id, 'use_cases', $use_cases);
-  $benefits = gcp_get_text_list_path($item, ['benefits','benefit']);
-  if ($benefits) gcp_update_meta_raw($post_id, 'benefits', $benefits);
-  $features = gcp_get_text_list_path($item, ['features','feature']);
-  if ($features) gcp_update_meta_raw($post_id, 'features', $features);
+  $benefits_raw = gcp_get_text_list_path($item, ['benefits','benefit']);
+  if ($benefits_raw) {
+    $benefits_rows = array_map(fn($t) => ['text' => $t], $benefits_raw);
+    gcp_update_field_safe('benefits', $benefits_rows, $post_id);
+  }
+  $features_raw = gcp_get_text_list_path($item, ['features','feature']);
+  if ($features_raw) {
+    $features_rows = array_map(fn($t) => ['text' => $t], $features_raw);
+    gcp_update_field_safe('features', $features_rows, $post_id);
+  }
   $variants = gcp_extract_variants($item);
   if ($variants) gcp_update_meta_raw($post_id, 'variants', $variants);
   $youtube_id = gcp_get_path($item, ['video','youtube_id']);

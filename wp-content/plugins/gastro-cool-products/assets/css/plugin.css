@@ -743,4 +743,111 @@ body.gc-inquiry-overlay-open {
   opacity: 0.7;
   line-height: 1.4;
 }
-/*# sourceMappingURL=plugin.css.map */
+
+.gc-heading {
+  margin: 0;
+  line-height: 1.2;
+  font-weight: 700;
+  color: var(--e-global-color-primary, #111827);
+}
+.gc-heading:is(h1) {
+  font-size: 2.5rem;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+.gc-heading:is(h2) {
+  font-size: 2rem;
+  line-height: 1.15;
+  letter-spacing: -0.015em;
+}
+.gc-heading:is(h3) {
+  font-size: 1.5rem;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+.gc-heading:is(h4) {
+  font-size: 1.25rem;
+  line-height: 1.25;
+}
+.gc-heading:is(h5) {
+  font-size: 1.125rem;
+  line-height: 1.3;
+  font-weight: 600;
+}
+.gc-heading:is(h6) {
+  font-size: 1rem;
+  line-height: 1.4;
+  font-weight: 600;
+}
+.gc-heading__prefix, .gc-heading__suffix {
+  font-weight: 400;
+  opacity: 0.6;
+}
+.gc-heading__value {
+  font-weight: inherit;
+}
+
+.gc-product-gallery {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.gc-product-gallery__main {
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  aspect-ratio: 1/1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.gc-product-gallery__main-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  transition: opacity 0.2s ease;
+}
+.gc-product-gallery__main-img.is-loading {
+  opacity: 0;
+}
+.gc-product-gallery__thumbs {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 10px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.gc-product-gallery__thumbs::-webkit-scrollbar {
+  display: none;
+}
+.gc-product-gallery__thumb {
+  width: 68px;
+  height: 68px;
+  padding: 0;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  background: #f5f6f7;
+  overflow: hidden;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+  flex-shrink: 0;
+}
+.gc-product-gallery__thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+.gc-product-gallery__thumb:hover {
+  border-color: #9ca3af;
+}
+.gc-product-gallery__thumb--active {
+  border-color: var(--e-global-color-primary, #1d4ed8);
+}
+.gc-product-gallery__counter {
+  margin: 0;
+  font-size: 13px;
+  color: #6b7280;
+  line-height: 1.4;
+}
