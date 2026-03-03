@@ -252,6 +252,8 @@ function gcp_assign_simple_tax($post_id, $taxonomy, $value){
   $term = term_exists($value, $taxonomy);
   if (! $term){ $term = wp_insert_term($value, $taxonomy); if (is_wp_error($term)) return; }
   $tid = (int)(is_array($term)?$term['term_id']:$term);
+  // Avoid duplicate relationship inserts when the same term is mapped multiple times.
+  if (has_term($tid, $taxonomy, $post_id)) return;
   wp_set_object_terms($post_id, [$tid], $taxonomy, true);
 }
 
@@ -259,7 +261,9 @@ function gcp_assign_certification($post_id, $authority, $name, $code){
   $path = trim($authority).' > '.trim($name);
   $tid = gcp_upsert_term_path('certification', $path);
   if ($tid){
-    wp_set_object_terms($post_id, [$tid], 'certification', true);
+    if (! has_term($tid, 'certification', $post_id)) {
+      wp_set_object_terms($post_id, [$tid], 'certification', true);
+    }
     if ($code){ update_term_meta($tid, 'cert_code', $code); }
   }
 }
