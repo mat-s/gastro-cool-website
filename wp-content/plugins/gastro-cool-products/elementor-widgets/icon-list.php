@@ -186,6 +186,9 @@ class Icon_List_Widget extends Widget_Base
         $raw = get_field($acf_field);
         if (is_array($raw)) {
           $items = $raw;
+        } elseif (is_string($raw) && trim($raw) !== '') {
+          // Support plain text fields: split into one list item per non-empty line.
+          $items = preg_split('/\r\n|\r|\n/', $raw) ?: [];
         }
       }
 
