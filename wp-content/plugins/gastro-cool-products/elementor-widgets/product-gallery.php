@@ -69,13 +69,21 @@ class Product_Gallery_Widget extends Widget_Base
       }
     }
 
-    // 2. Weitere Bilder aus ACF-Repeater additional_image_links
+    // 2. Weitere Bilder aus ACF gallery additional_image_links (return_format='id')
     $additional = get_field('additional_image_links', $post_id);
     if (is_array($additional)) {
       foreach ($additional as $row) {
-        $url = isset($row['url']) ? trim($row['url']) : '';
+        if (is_numeric($row)) {
+          // ACF gallery mit return_format='id' liefert Integer-IDs
+          $url = wp_get_attachment_image_url((int)$row, 'large');
+          $alt = get_post_meta((int)$row, '_wp_attachment_image_alt', true) ?: '';
+        } else {
+          // Fallback: array-Format
+          $url = isset($row['url']) ? trim($row['url']) : '';
+          $alt = isset($row['alt']) ? $row['alt'] : '';
+        }
         if ($url !== '') {
-          $images[] = ['url' => $url, 'alt' => ''];
+          $images[] = ['url' => $url, 'alt' => $alt];
         }
       }
     }

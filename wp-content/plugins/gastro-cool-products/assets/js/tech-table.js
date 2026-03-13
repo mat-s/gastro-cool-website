@@ -13,6 +13,7 @@
     }
 
     btn.addEventListener('click', function () {
+      console.log('clicked');
       if (wrapper.classList.contains('is-open')) {
         close(wrapper, btn, body);
       } else {
@@ -56,15 +57,15 @@
   }
 
   // Elementor editor re-renders widgets on change
-  if (window.elementorFrontend) {
-    window.elementorFrontend.hooks.addAction(
-      'frontend/element_ready/gcp_tech_table.default',
-      function ($el) {
-        var wrapper = $el[0].querySelector('.gc-tech-table--accordion');
-        if (wrapper) initAccordion(wrapper);
-      }
-    );
-  }
+  // if (window.elementorFrontend) {
+  //   window.elementorFrontend.hooks.addAction(
+  //     'frontend/element_ready/gcp_tech_table.default',
+  //     function ($el) {
+  //       var wrapper = $el[0].querySelector('.gc-tech-table--accordion');
+  //       if (wrapper) initAccordion(wrapper);
+  //     }
+  //   );
+  // }
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);

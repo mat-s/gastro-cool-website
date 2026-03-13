@@ -1,11 +1,13 @@
+name: gastrocool
+
 services:
   wordpress:
     image: wordpress:6.8.2-php8.2-apache
     platform: linux/amd64
-    container_name: wp_site
+    container_name: gc_wp_site
     restart: unless-stopped
     ports:
-      - "8080:80"
+      - "8082:80"
     environment:
       WORDPRESS_DB_HOST: db
       WORDPRESS_DB_USER: wordpress
@@ -30,7 +32,7 @@ services:
   db:
     image: mysql:8.0
     platform: linux/amd64
-    container_name: wp_db
+    container_name: gc_wp_db
     restart: unless-stopped
     environment:
       MYSQL_DATABASE: wordpress
@@ -39,10 +41,10 @@ services:
       MYSQL_ROOT_PASSWORD: rootpassword123
       MYSQL_ALLOW_EMPTY_PASSWORD: 'false'
     volumes:
-      - db_data:/var/lib/mysql
+      - gc_db_data:/var/lib/mysql
       - ./mysql-init:/docker-entrypoint-initdb.d
     ports:
-      - "3306:3306"
+      - "3307:3306"
     networks:
       - wordpress-network
     command: '--default-authentication-plugin=mysql_native_password'
@@ -50,22 +52,24 @@ services:
   phpmyadmin:
     image: phpmyadmin/phpmyadmin:latest
     platform: linux/amd64
-    container_name: wp_phpmyadmin
+    container_name: gc_wp_phpmyadmin
     restart: unless-stopped
     ports:
-      - "8081:80"
+      - "8083:80"
     environment:
       PMA_HOST: db
       PMA_USER: root
       PMA_PASSWORD: rootpassword123
       MYSQL_ROOT_PASSWORD: rootpassword123
+    volumes:
+      - ./uploads.ini:/usr/local/etc/php/conf.d/uploads.ini
     depends_on:
       - db
     networks:
       - wordpress-network
 
 volumes:
-  db_data:
+  gc_db_data:
 
 networks:
   wordpress-network:
