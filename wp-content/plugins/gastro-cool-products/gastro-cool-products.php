@@ -344,32 +344,11 @@ add_action('plugins_loaded', function () {
     $widgets_manager->register( new \GCP\Elementor\Widgets\Icon_List_Widget() );
     $widgets_manager->register( new \GCP\Elementor\Widgets\Tech_Table_Widget() );
   });
-  // Register widget-specific assets
+  // Register bundled plugin JS (all widget scripts concatenated)
   add_action('elementor/frontend/after_register_scripts', function() {
     wp_register_script(
-      'gcp-inquiry-list-widget',
-      plugins_url('assets/js/inquiry-list.js', __FILE__),
-      ['gcp-inquiry'],
-      GCP_VERSION,
-      true
-    );
-    wp_register_script(
-      'gcp-inquiry-form-widget',
-      plugins_url('assets/js/inquiry-form.js', __FILE__),
-      ['gcp-inquiry'],
-      GCP_VERSION,
-      true
-    );
-    wp_register_script(
-      'gcp-product-gallery-widget',
-      plugins_url('assets/js/product-gallery.js', __FILE__),
-      [],
-      GCP_VERSION,
-      true
-    );
-    wp_register_script(
-      'gcp-tech-table-widget',
-      plugins_url('assets/js/tech-table.js', __FILE__),
+      'gcp-plugin',
+      plugins_url('assets/js/plugin.js', __FILE__),
       [],
       GCP_VERSION,
       true
@@ -389,7 +368,7 @@ add_action('plugins_loaded', function () {
     wp_register_style('gcp-icon-list-widget',        $plugin_css, [], GCP_VERSION);
     wp_register_style('gcp-tech-table-widget',       $plugin_css, [], GCP_VERSION);
   });
-  // Enqueue skin styles and inquiry script on frontend
+  // Enqueue plugin styles and bundled JS on frontend
   add_action('wp_enqueue_scripts', function(){
     wp_enqueue_style(
       'gcp-plugin',
@@ -399,25 +378,9 @@ add_action('plugins_loaded', function () {
     );
 
     wp_enqueue_script(
-      'gcp-inquiry',
-      plugins_url('assets/js/inquiry.js', __FILE__),
+      'gcp-plugin',
+      plugins_url('assets/js/plugin.js', __FILE__),
       [],
-      GCP_VERSION,
-      true
-    );
-
-    wp_enqueue_script(
-      'gcp-inquiry-overlay',
-      plugins_url('assets/js/inquiry-overlay.js', __FILE__),
-      ['gcp-inquiry'],
-      GCP_VERSION,
-      true
-    );
-
-    wp_enqueue_script(
-      'gcp-inquiry-badge',
-      plugins_url('assets/js/inquiry-badge.js', __FILE__),
-      ['gcp-inquiry'],
       GCP_VERSION,
       true
     );

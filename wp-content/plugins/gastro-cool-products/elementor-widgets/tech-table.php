@@ -33,7 +33,7 @@ class Tech_Table_Widget extends Widget_Base
   }
 
   public function get_script_depends() {
-    return ['gcp-tech-table-widget'];
+    return ['gcp-plugin'];
   }
 
   private const SCALAR_TYPES = [

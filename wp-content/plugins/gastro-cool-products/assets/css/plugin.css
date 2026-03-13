@@ -938,7 +938,7 @@ body.gc-inquiry-overlay-open {
   text-align: left;
   color: inherit;
 }
-.gc-tech-table__toggle:hover {
+.gc-tech-table__toggle:hover, .gc-tech-table__toggle:focus {
   background-color: transparent;
   border: 0;
 }

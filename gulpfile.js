@@ -5,6 +5,7 @@ const header = require('gulp-header');
 const cleanCSS = require('gulp-clean-css');
 const rename = require('gulp-rename');
 const sourcemaps = require('gulp-sourcemaps');
+const concat = require('gulp-concat');
 
 // WordPress Theme Header für CSS
 const themeHeader = `/*
@@ -36,13 +37,27 @@ const paths = {
   }
 };
 
-// Pfade für das Gastro-Cool Products Plugin (Product Skin SCSS)
+// Pfade für das Gastro-Cool Products Plugin
 const pluginPaths = {
   scss: {
     src: 'wp-content/plugins/gastro-cool-products/assets/scss/**/*.scss',
     main: 'wp-content/plugins/gastro-cool-products/assets/scss/main.scss',
     dest: 'wp-content/plugins/gastro-cool-products/assets/css/',
     outFile: 'plugin.css'
+  },
+  js: {
+    // Explicit order: inquiry core first, then overlays/badges, then widgets
+    src: [
+      'wp-content/plugins/gastro-cool-products/assets/js/inquiry.js',
+      'wp-content/plugins/gastro-cool-products/assets/js/inquiry-overlay.js',
+      'wp-content/plugins/gastro-cool-products/assets/js/inquiry-badge.js',
+      'wp-content/plugins/gastro-cool-products/assets/js/inquiry-form.js',
+      'wp-content/plugins/gastro-cool-products/assets/js/inquiry-list.js',
+      'wp-content/plugins/gastro-cool-products/assets/js/product-gallery.js',
+      'wp-content/plugins/gastro-cool-products/assets/js/tech-table.js',
+    ],
+    dest: 'wp-content/plugins/gastro-cool-products/assets/js/',
+    outFile: 'plugin.js'
   }
 };
 
@@ -72,6 +87,16 @@ function compilePluginSCSS() {
     .pipe(rename(pluginPaths.scss.outFile))
     .pipe(sourcemaps.write('.'))
     .pipe(gulp.dest(pluginPaths.scss.dest))
+    .pipe(browserSync.stream());
+}
+
+// JS Bundle für Gastro-Cool Products Plugin
+function compilePluginJS() {
+  return gulp.src(pluginPaths.js.src)
+    .pipe(sourcemaps.init())
+    .pipe(concat(pluginPaths.js.outFile))
+    .pipe(sourcemaps.write('.'))
+    .pipe(gulp.dest(pluginPaths.js.dest))
     .pipe(browserSync.stream());
 }
 
@@ -121,6 +146,7 @@ function startServer(done) {
 function watchFiles() {
   gulp.watch(paths.scss.src, compileSCSS);
   gulp.watch(pluginPaths.scss.src, compilePluginSCSS);
+  gulp.watch(pluginPaths.js.src, compilePluginJS);
   gulp.watch(paths.js.src, copyJS);
   gulp.watch(paths.php.src).on('change', browserSync.reload);
 }
@@ -130,22 +156,23 @@ gulp.task('scss', compileSCSS);
 gulp.task('scss:prod', compileSCSSProd);
 gulp.task('plugin-scss', compilePluginSCSS);
 gulp.task('plugin-scss:prod', compilePluginSCSSProd);
+gulp.task('plugin-js', compilePluginJS);
 gulp.task('js', copyJS);
 gulp.task('server', startServer);
 gulp.task('watch', gulp.series(startServer, watchFiles));
 
 // Build Tasks
 gulp.task('build', gulp.series(
-  gulp.parallel(compileSCSS, compilePluginSCSS, copyJS)
+  gulp.parallel(compileSCSS, compilePluginSCSS, compilePluginJS, copyJS)
 ));
 
 gulp.task('build:prod', gulp.series(
-  gulp.parallel(compileSCSSProd, compilePluginSCSSProd, copyJS)
+  gulp.parallel(compileSCSSProd, compilePluginSCSSProd, compilePluginJS, copyJS)
 ));
 
 // Development Task (default)
 gulp.task('default', gulp.series(
-  gulp.parallel(compileSCSS, compilePluginSCSS, copyJS),
+  gulp.parallel(compileSCSS, compilePluginSCSS, compilePluginJS, copyJS),
   startServer,
   watchFiles
 ));

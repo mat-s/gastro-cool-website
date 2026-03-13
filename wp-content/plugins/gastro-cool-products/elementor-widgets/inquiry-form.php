@@ -29,7 +29,7 @@ class Inquiry_Form_Widget extends Widget_Base
   }
 
   public function get_script_depends() {
-    return ['gcp-inquiry-form-widget'];
+    return ['gcp-plugin'];
   }
 
   public function get_style_depends() {

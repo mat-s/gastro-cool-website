@@ -31,7 +31,8 @@
     text-align: left;
     color: inherit;
 
-    &:hover {
+    &:hover, 
+    &:focus {
       background-color: transparent;
       border: 0;
     }

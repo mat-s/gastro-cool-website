@@ -31,7 +31,7 @@ class Product_Gallery_Widget extends Widget_Base
   }
 
   public function get_script_depends() {
-    return ['gcp-product-gallery-widget'];
+    return ['gcp-plugin'];
   }
 
   protected function register_controls() {
