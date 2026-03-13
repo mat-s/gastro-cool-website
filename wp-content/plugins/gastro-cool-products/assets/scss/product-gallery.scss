@@ -32,14 +32,10 @@ $border-active: var(--e-global-color-primary, #1d4ed8);
     }
   }
 
-  // ── Thumbnails ────────────────────────────────────────────────────────
+  // ── Thumbnails (Swiper) ───────────────────────────────────────────────
   &__thumbs {
-    display: flex;
-    flex-wrap: nowrap;
-    gap: $thumb-gap;
-    overflow-x: auto;
-    scrollbar-width: none; // Firefox
-    &::-webkit-scrollbar { display: none; } // Chrome/Safari
+    position: relative; // für Swiper-Navigation-Buttons nötig
+    width: 100%;
   }
 
   &__thumb {
@@ -52,7 +48,7 @@ $border-active: var(--e-global-color-primary, #1d4ed8);
     overflow: hidden;
     cursor: pointer;
     transition: border-color 0.15s ease;
-    flex-shrink: 0;
+    box-shadow: none;
 
     img {
       width: 100%;
@@ -63,6 +59,7 @@ $border-active: var(--e-global-color-primary, #1d4ed8);
 
     &:hover {
       border-color: #9ca3af;
+      background-color: inherit;
     }
 
     &--active {
@@ -76,5 +73,23 @@ $border-active: var(--e-global-color-primary, #1d4ed8);
     font-size: 13px;
     color: #6b7280;
     line-height: 1.4;
+  }
+}
+
+// ── Swiper-Pfeile anpassen ─────────────────────────────────────────────
+.gc-product-gallery__thumbs {
+  .swiper-button-prev,
+  .swiper-button-next {
+    width: 32px;
+    height: 32px;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 50%;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+
+    &::after {
+      font-size: 12px;
+      color: #374151;
+    }
   }
 }

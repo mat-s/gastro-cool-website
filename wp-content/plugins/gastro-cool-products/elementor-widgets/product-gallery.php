@@ -27,7 +27,7 @@ class Product_Gallery_Widget extends Widget_Base
   }
 
   public function get_style_depends() {
-    return ['gcp-product-gallery-widget'];
+    return ['gcp-plugin'];
   }
 
   public function get_script_depends() {
@@ -108,19 +108,25 @@ class Product_Gallery_Widget extends Widget_Base
     echo '</div>';
 
     if ($multi) {
-      // Thumbnails
-      echo '<div class="gc-product-gallery__thumbs">';
+      // Thumbnails (Swiper)
+      echo '<div class="gc-product-gallery__thumbs swiper">';
+      echo '<div class="swiper-wrapper">';
       foreach ($images as $i => $img) {
         $active = $i === 0 ? ' gc-product-gallery__thumb--active' : '';
-        echo '<button type="button"'
+        echo '<div class="swiper-slide">'
+           . '<button type="button"'
            . ' class="gc-product-gallery__thumb' . $active . '"'
            . ' data-src="' . esc_url($img['url']) . '"'
            . ' data-alt="' . esc_attr($img['alt']) . '"'
            . ' data-index="' . esc_attr($i) . '"'
            . ' aria-label="' . esc_attr(sprintf(__('Bild %d von %d', 'gastro-cool-products'), $i + 1, $total)) . '">'
            . '<img src="' . esc_url($img['url']) . '" alt="" loading="lazy" />'
-           . '</button>';
+           . '</button>'
+           . '</div>';
       }
+      echo '</div>';
+      echo '<div class="swiper-button-prev"></div>';
+      echo '<div class="swiper-button-next"></div>';
       echo '</div>';
 
       // Zähler

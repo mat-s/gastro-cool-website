@@ -29,7 +29,7 @@ class Icon_List_Widget extends Widget_Base
   }
 
   public function get_style_depends() {
-    return ['gcp-icon-list-widget'];
+    return ['gcp-plugin'];
   }
 
   /**

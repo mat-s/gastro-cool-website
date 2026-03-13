@@ -28,7 +28,7 @@ class Taxonomy_Labels_Widget extends Widget_Base
   }
 
   public function get_style_depends() {
-    return ['gcp-taxonomy-labels-widget'];
+    return ['gcp-plugin'];
   }
 
   private function get_taxonomy_options() {

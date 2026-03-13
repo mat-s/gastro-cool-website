@@ -333,6 +333,7 @@ add_action('plugins_loaded', function () {
     require_once GCP_PLUGIN_DIR . 'elementor-widgets/product-gallery.php';
     require_once GCP_PLUGIN_DIR . 'elementor-widgets/icon-list.php';
     require_once GCP_PLUGIN_DIR . 'elementor-widgets/tech-table.php';
+    require_once GCP_PLUGIN_DIR . 'elementor-widgets/capacity-grid.php';
     $widgets_manager->register( new \GCP\Elementor\Widgets\Inquiry_Button_Widget() );
     $widgets_manager->register( new \GCP\Elementor\Widgets\Inquiry_List_Widget() );
     $widgets_manager->register( new \GCP\Elementor\Widgets\Inquiry_Form_Widget() );
@@ -343,30 +344,20 @@ add_action('plugins_loaded', function () {
     $widgets_manager->register( new \GCP\Elementor\Widgets\Product_Gallery_Widget() );
     $widgets_manager->register( new \GCP\Elementor\Widgets\Icon_List_Widget() );
     $widgets_manager->register( new \GCP\Elementor\Widgets\Tech_Table_Widget() );
+    $widgets_manager->register( new \GCP\Elementor\Widgets\Capacity_Grid_Widget() );
   });
   // Register bundled plugin JS (all widget scripts concatenated)
   add_action('elementor/frontend/after_register_scripts', function() {
     wp_register_script(
       'gcp-plugin',
       plugins_url('assets/js/plugin.js', __FILE__),
-      [],
+      ['swiper'],
       GCP_VERSION,
       true
     );
   });
   add_action('elementor/frontend/after_register_styles', function() {
-    // All plugin styles are bundled into plugin.css
-    $plugin_css = plugins_url('assets/css/plugin.css', __FILE__);
-    wp_register_style('gcp-plugin',                 $plugin_css, [], GCP_VERSION);
-    wp_register_style('gcp-inquiry-list-widget',    $plugin_css, [], GCP_VERSION);
-    wp_register_style('gcp-inquiry-form-widget',    $plugin_css, [], GCP_VERSION);
-    wp_register_style('gcp-label-list-widget',      $plugin_css, [], GCP_VERSION);
-    wp_register_style('gcp-taxonomy-labels-widget', $plugin_css, [], GCP_VERSION);
-    wp_register_style('gcp-spec-list-widget',             $plugin_css, [], GCP_VERSION);
-    wp_register_style('gcp-heading-widget',          $plugin_css, [], GCP_VERSION);
-    wp_register_style('gcp-product-gallery-widget',  $plugin_css, [], GCP_VERSION);
-    wp_register_style('gcp-icon-list-widget',        $plugin_css, [], GCP_VERSION);
-    wp_register_style('gcp-tech-table-widget',       $plugin_css, [], GCP_VERSION);
+    wp_register_style('gcp-plugin', plugins_url('assets/css/plugin.css', __FILE__), [], GCP_VERSION);
   });
   // Enqueue plugin styles and bundled JS on frontend
   add_action('wp_enqueue_scripts', function(){
@@ -380,7 +371,7 @@ add_action('plugins_loaded', function () {
     wp_enqueue_script(
       'gcp-plugin',
       plugins_url('assets/js/plugin.js', __FILE__),
-      [],
+      ['swiper'],
       GCP_VERSION,
       true
     );

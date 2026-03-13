@@ -29,7 +29,7 @@ class Spec_List_Widget extends Widget_Base
   }
 
   public function get_style_depends() {
-    return ['gcp-spec-list-widget'];
+    return ['gcp-plugin'];
   }
 
   protected function register_controls() {

@@ -28,7 +28,7 @@ class Heading_Widget extends Widget_Base
   }
 
   public function get_style_depends() {
-    return ['gcp-heading-widget'];
+    return ['gcp-plugin'];
   }
 
   protected function register_controls() {
