@@ -10,3 +10,4 @@
 // @include inquiry-list.js
 // @include product-gallery.js
 // @include tech-table.js
+// @include product-video.js

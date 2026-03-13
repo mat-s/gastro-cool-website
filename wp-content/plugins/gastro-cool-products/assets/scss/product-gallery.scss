@@ -99,6 +99,53 @@ $border-active: var(--e-global-color-primary, #1d4ed8);
     position: relative;
     transition-property: transform;
   }
+
+  .swiper-button-next,
+  .swiper-button-prev {
+    position: absolute;
+    top: 50%;
+    width: calc(var(--swiper-navigation-size) / 44 * 27);
+    height: var(--swiper-navigation-size);
+    margin-top: calc(0px - (var(--swiper-navigation-size) / 2));
+    z-index: 10;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--swiper-navigation-color, var(--swiper-theme-color));
+  }
+
+  .swiper-button-prev,
+  .swiper-rtl .swiper-button-next {
+    left: 10px;
+    right: auto;
+  }
+
+  .swiper-button-next,
+  .swiper-rtl .swiper-button-prev {
+    right: 10px;
+    left: auto;
+  }
+
+  .swiper-button-next::after,
+  .swiper-button-prev::after {
+    font-family: swiper-icons;
+    font-size: var(--swiper-navigation-size);
+    text-transform: none !important;
+    letter-spacing: 0;
+    font-variant: initial;
+    line-height: 1;
+  }
+
+  .swiper-button-prev::after,
+  .swiper-rtl .swiper-button-next::after {
+    content: "prev";
+  }
+
+  .swiper-button-next::after,
+  .swiper-rtl .swiper-button-prev::after {
+    content: "next";
+  }
 }
 
 // ── Swiper-Pfeile anpassen ─────────────────────────────────────────────
@@ -115,6 +162,18 @@ $border-active: var(--e-global-color-primary, #1d4ed8);
     &::after {
       font-size: 12px;
       color: #374151;
+    }
+
+    // Hide default Swiper arrow when a custom icon element is rendered inside
+    &:has(i, svg) {
+      &::after { display: none; }
+
+      i, svg {
+        font-size: 12px;
+        color: #374151;
+        width: 12px;
+        height: 12px;
+      }
     }
   }
 }

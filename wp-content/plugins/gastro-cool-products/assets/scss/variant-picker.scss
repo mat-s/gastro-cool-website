@@ -1,0 +1,149 @@
+// ── Variant Picker Widget ─────────────────────────────────────────────
+
+.gc-variant-picker {
+
+  &__heading {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 20px;
+    font-size: 1.25rem;
+    font-weight: 700;
+    line-height: 1.3;
+    color: var(--e-global-color-primary, #111827);
+  }
+
+  &__heading-icon {
+    display: inline-flex;
+    align-items: center;
+    color: var(--e-global-color-primary, #1e3a5f);
+
+    i, svg {
+      font-size: 1.125rem;
+      width: 1.125rem;
+      height: 1.125rem;
+    }
+  }
+
+  // ── Group ─────────────────────────────────────────────────────────────
+
+  &__group {
+    & + & {
+      margin-top: 24px;
+      padding-top: 24px;
+      border-top: 1px solid #e5e7eb;
+    }
+  }
+
+  &__group-label {
+    margin: 0 0 12px;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #6b7280;
+  }
+
+  // ── Options grid ──────────────────────────────────────────────────────
+
+  &__options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  // ── Single option card ────────────────────────────────────────────────
+
+  &__option {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    cursor: default;
+    border-radius: 8px;
+    border: 2px solid #e5e7eb;
+    padding: 10px;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    background: #fff;
+
+    &.is-active {
+      border-color: var(--e-global-color-primary, #1e3a5f);
+      box-shadow: 0 0 0 3px rgba(30, 58, 95, 0.12);
+    }
+  }
+
+  // ── Image ─────────────────────────────────────────────────────────────
+
+  &__image {
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    overflow: hidden;
+    background: #f9fafb;
+
+    img {
+      max-width: 100%;
+      max-height: 100%;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      display: block;
+    }
+  }
+
+  &__no-image {
+    display: block;
+    width: 100%;
+    height: 100%;
+    background: #f3f4f6;
+    border-radius: 4px;
+  }
+
+  // ── Meta ──────────────────────────────────────────────────────────────
+
+  &__meta {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    text-align: center;
+    max-width: 100px;
+  }
+
+  &__value {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: #111827;
+    line-height: 1.3;
+    word-break: break-word;
+
+    .is-active & {
+      color: var(--e-global-color-primary, #1e3a5f);
+    }
+  }
+
+  &__additional {
+    font-size: 0.75rem;
+    color: #6b7280;
+    line-height: 1.3;
+  }
+
+  &__artno {
+    font-size: 0.6875rem;
+    color: #9ca3af;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.3;
+  }
+
+  // ── Empty ─────────────────────────────────────────────────────────────
+
+  &__empty {
+    margin: 0;
+    font-size: 0.875rem;
+    color: #9ca3af;
+    font-style: italic;
+  }
+}

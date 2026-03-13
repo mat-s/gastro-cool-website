@@ -7,6 +7,8 @@ if (! defined('ABSPATH')) {
 }
 
 use Elementor\Widget_Base;
+use Elementor\Controls_Manager;
+use Elementor\Icons_Manager;
 
 class Product_Gallery_Widget extends Widget_Base
 {
@@ -35,7 +37,33 @@ class Product_Gallery_Widget extends Widget_Base
   }
 
   protected function register_controls() {
-    // Keine Controls – alle Daten kommen automatisch aus dem Post
+    $this->start_controls_section('section_navigation', [
+      'label' => __('Navigation', 'gastro-cool-products'),
+    ]);
+
+    $this->add_control('icon_prev', [
+      'label'            => __('Previous icon', 'gastro-cool-products'),
+      'type'             => Controls_Manager::ICONS,
+      'default'          => ['value' => 'fas fa-chevron-left', 'library' => 'fa-solid'],
+      'recommended'      => [
+        'fa-solid' => ['chevron-left', 'arrow-left', 'angle-left', 'caret-left'],
+      ],
+      'skin'             => 'inline',
+      'label_block'      => false,
+    ]);
+
+    $this->add_control('icon_next', [
+      'label'            => __('Next icon', 'gastro-cool-products'),
+      'type'             => Controls_Manager::ICONS,
+      'default'          => ['value' => 'fas fa-chevron-right', 'library' => 'fa-solid'],
+      'recommended'      => [
+        'fa-solid' => ['chevron-right', 'arrow-right', 'angle-right', 'caret-right'],
+      ],
+      'skin'             => 'inline',
+      'label_block'      => false,
+    ]);
+
+    $this->end_controls_section();
   }
 
   protected function render() {
@@ -48,7 +76,7 @@ class Product_Gallery_Widget extends Widget_Base
       return;
     }
 
-    // ── Bilder sammeln ────────────────────────────────────────────────────
+    // ── Collect images ────────────────────────────────────────────────────
     $images = [];
 
     // 1. Featured Image
@@ -61,7 +89,7 @@ class Product_Gallery_Widget extends Widget_Base
       }
     }
 
-    // Fallback: featured_image_source_url (ACF, externe URL aus dem Import)
+    // Fallback: featured_image_source_url (ACF, external URL from import)
     if (empty($images)) {
       $src = get_field('featured_image_source_url', $post_id);
       if ($src) {
@@ -69,16 +97,16 @@ class Product_Gallery_Widget extends Widget_Base
       }
     }
 
-    // 2. Weitere Bilder aus ACF gallery additional_image_links (return_format='id')
+    // 2. Additional images from ACF gallery additional_image_links (return_format='id')
     $additional = get_field('additional_image_links', $post_id);
     if (is_array($additional)) {
       foreach ($additional as $row) {
         if (is_numeric($row)) {
-          // ACF gallery mit return_format='id' liefert Integer-IDs
+          // ACF gallery with return_format='id' returns integer IDs
           $url = wp_get_attachment_image_url((int)$row, 'large');
           $alt = get_post_meta((int)$row, '_wp_attachment_image_alt', true) ?: '';
         } else {
-          // Fallback: array-Format
+          // Fallback: array format
           $url = isset($row['url']) ? trim($row['url']) : '';
           $alt = isset($row['alt']) ? $row['alt'] : '';
         }
@@ -92,6 +120,7 @@ class Product_Gallery_Widget extends Widget_Base
       return;
     }
 
+    $settings   = $this->get_settings_for_display();
     $total      = count($images);
     $multi      = $total > 1;
     $widget_id  = $this->get_id();
@@ -99,7 +128,7 @@ class Product_Gallery_Widget extends Widget_Base
     // ── Markup ────────────────────────────────────────────────────────────
     echo '<div class="gc-product-gallery" id="gc-gallery-' . esc_attr($widget_id) . '" data-gallery>';
 
-    // Hauptbild
+    // Main image
     echo '<div class="gc-product-gallery__main">';
     echo '<img class="gc-product-gallery__main-img"'
        . ' src="' . esc_url($images[0]['url']) . '"'
@@ -125,11 +154,23 @@ class Product_Gallery_Widget extends Widget_Base
            . '</div>';
       }
       echo '</div>';
-      echo '<div class="swiper-button-prev"></div>';
-      echo '<div class="swiper-button-next"></div>';
+
+      // Navigation buttons with optional custom icons
+      echo '<div class="swiper-button-prev">';
+      if (! empty($settings['icon_prev']['value'])) {
+        Icons_Manager::render_icon($settings['icon_prev'], ['aria-hidden' => 'true']);
+      }
       echo '</div>';
 
-      // Zähler
+      echo '<div class="swiper-button-next">';
+      if (! empty($settings['icon_next']['value'])) {
+        Icons_Manager::render_icon($settings['icon_next'], ['aria-hidden' => 'true']);
+      }
+      echo '</div>';
+
+      echo '</div>';
+
+      // Counter
       echo '<p class="gc-product-gallery__counter">';
       echo '<span class="gc-product-gallery__counter-current">1</span>'
          . ' / '

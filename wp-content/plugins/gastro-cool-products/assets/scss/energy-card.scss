@@ -1,0 +1,94 @@
+// ── Energy Card Widget ────────────────────────────────────────────────
+
+.gc-energy-card {
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin: 0 0 20px;
+  }
+
+  &__heading {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 700;
+    line-height: 1.3;
+    color: var(--e-global-color-primary, #111827);
+  }
+
+  &__heading-icon {
+    display: inline-flex;
+    align-items: center;
+    color: var(--e-global-color-primary, #1e3a5f);
+
+    i, svg {
+      font-size: 1.125rem;
+      width: 1.125rem;
+      height: 1.125rem;
+    }
+  }
+
+  // ── Card ──────────────────────────────────────────────────────────────
+
+  &__card {
+    background: #f3f4f6;
+    border-radius: 8px;
+    padding: 4px 24px;
+  }
+
+  // ── Rows ──────────────────────────────────────────────────────────────
+
+  &__rows {
+    margin: 0;
+    padding: 0;
+  }
+
+  &__row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 24px;
+    padding: 14px 0;
+    border-bottom: 1px solid #e5e7eb;
+
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+
+  &__label {
+    flex: 0 1 auto;
+    font-size: 0.9375rem;
+    font-weight: 400;
+    color: #6b7280;
+    line-height: 1.45;
+  }
+
+  &__value {
+    flex: 0 0 auto;
+    text-align: right;
+    font-size: 0.9375rem;
+    font-weight: 700;
+    color: #111827;
+    line-height: 1.45;
+    margin: 0;
+  }
+
+  &__row--empty &__value {
+    font-weight: 400;
+    color: #9ca3af;
+  }
+
+  // ── Energy label button (in header, right side) ───────────────────────
+
+  &__label-button {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+  }
+}
