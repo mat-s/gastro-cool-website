@@ -4,7 +4,7 @@
   font-weight: 700;
   color: var(--e-global-color-primary, #111827);
 
-  // ── Größen je Tag-Stärke ──────────────────────────────────────────────
+  // ── Font sizes per heading level ──────────────────────────────────────
   &:is(h1) { font-size: 2.5rem;   line-height: 1.1; letter-spacing: -0.02em; }
   &:is(h2) { font-size: 2rem;     line-height: 1.15; letter-spacing: -0.015em; }
   &:is(h3) { font-size: 1.5rem;   line-height: 1.2; letter-spacing: -0.01em; }
@@ -12,14 +12,14 @@
   &:is(h5) { font-size: 1.125rem; line-height: 1.3; font-weight: 600; }
   &:is(h6) { font-size: 1rem;     line-height: 1.4; font-weight: 600; }
 
-  // ── Präfix & Suffix gedämpft, aber Tag-Größe wird geerbt ─────────────
+  // ── Prefix & suffix muted, inherits heading font size ────────────────
   &__prefix,
   &__suffix {
     font-weight: 400;
     opacity: 0.6;
   }
 
-  // ── Wert: leicht hervorgehoben ────────────────────────────────────────
+  // ── Value: slightly emphasised ────────────────────────────────────────
   &__value {
     font-weight: inherit;
   }
