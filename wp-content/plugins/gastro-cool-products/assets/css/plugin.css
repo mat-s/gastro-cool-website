@@ -1073,4 +1073,112 @@ body.gc-inquiry-overlay-open {
   font-weight: 400;
   color: #9ca3af;
 }
+
+.gc-download-list__heading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 32px;
+  font-size: 1.375rem;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--e-global-color-primary, #111827);
+}
+.gc-download-list__heading-icon {
+  display: inline-flex;
+  align-items: center;
+  color: var(--e-global-color-primary, #1e3a5f);
+}
+.gc-download-list__heading-icon i, .gc-download-list__heading-icon svg {
+  font-size: 1.25rem;
+  width: 1.25rem;
+  height: 1.25rem;
+}
+.gc-download-list__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 40px 48px;
+}
+.gc-download-list__group-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.gc-download-list__group-icon {
+  display: inline-flex;
+  align-items: center;
+  color: var(--e-global-color-primary, #1e3a5f);
+}
+.gc-download-list__group-icon i, .gc-download-list__group-icon svg {
+  font-size: 1.125rem;
+  width: 1.125rem;
+  height: 1.125rem;
+}
+.gc-download-list__group-title {
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--e-global-color-primary, #111827);
+}
+.gc-download-list__files {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.gc-download-list__file {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+}
+.gc-download-list__file-icon {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  margin-top: 0.15em;
+  color: var(--e-global-color-primary, #1e3a5f);
+}
+.gc-download-list__file-icon i, .gc-download-list__file-icon svg {
+  font-size: 0.875rem;
+  width: 0.875rem;
+  height: 0.875rem;
+}
+.gc-download-list__link {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 6px;
+  text-decoration: none;
+  color: var(--e-global-color-primary, #1e3a5f);
+  font-size: 0.9375rem;
+  line-height: 1.45;
+  transition: opacity 0.15s ease;
+}
+.gc-download-list__link:hover {
+  text-decoration: underline;
+  opacity: 0.75;
+}
+.gc-download-list__file-title {
+  font-size: 0.9375rem;
+  line-height: 1.45;
+}
+.gc-download-list__empty {
+  margin: 0;
+  font-size: 0.875rem;
+  color: #9ca3af;
+  font-style: italic;
+}
+
+@media (max-width: 1024px) {
+  .gc-download-list__grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 600px) {
+  .gc-download-list__grid {
+    grid-template-columns: 1fr;
+  }
+}
 /*# sourceMappingURL=plugin.css.map */

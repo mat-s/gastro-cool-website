@@ -334,6 +334,7 @@ add_action('plugins_loaded', function () {
     require_once GCP_PLUGIN_DIR . 'elementor-widgets/icon-list.php';
     require_once GCP_PLUGIN_DIR . 'elementor-widgets/tech-table.php';
     require_once GCP_PLUGIN_DIR . 'elementor-widgets/capacity-grid.php';
+    require_once GCP_PLUGIN_DIR . 'elementor-widgets/download-list.php';
     $widgets_manager->register( new \GCP\Elementor\Widgets\Inquiry_Button_Widget() );
     $widgets_manager->register( new \GCP\Elementor\Widgets\Inquiry_List_Widget() );
     $widgets_manager->register( new \GCP\Elementor\Widgets\Inquiry_Form_Widget() );
@@ -345,6 +346,7 @@ add_action('plugins_loaded', function () {
     $widgets_manager->register( new \GCP\Elementor\Widgets\Icon_List_Widget() );
     $widgets_manager->register( new \GCP\Elementor\Widgets\Tech_Table_Widget() );
     $widgets_manager->register( new \GCP\Elementor\Widgets\Capacity_Grid_Widget() );
+    $widgets_manager->register( new \GCP\Elementor\Widgets\Download_List_Widget() );
   });
   // Register bundled plugin JS (all widget scripts concatenated)
   add_action('elementor/frontend/after_register_scripts', function() {

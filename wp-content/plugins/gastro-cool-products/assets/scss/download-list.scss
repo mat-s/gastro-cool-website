@@ -1,0 +1,136 @@
+// ── Download List Widget ───────────────────────────────────────────────
+
+.gc-download-list {
+
+  &__heading {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 32px;
+    font-size: 1.375rem;
+    font-weight: 700;
+    line-height: 1.3;
+    color: var(--e-global-color-primary, #111827);
+  }
+
+  &__heading-icon {
+    display: inline-flex;
+    align-items: center;
+    color: var(--e-global-color-primary, #1e3a5f);
+
+    i, svg {
+      font-size: 1.25rem;
+      width: 1.25rem;
+      height: 1.25rem;
+    }
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 40px 48px;
+  }
+
+  // ── Group ────────────────────────────────────────────────────────────
+
+  &__group-heading {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  &__group-icon {
+    display: inline-flex;
+    align-items: center;
+    color: var(--e-global-color-primary, #1e3a5f);
+
+    i, svg {
+      font-size: 1.125rem;
+      width: 1.125rem;
+      height: 1.125rem;
+    }
+  }
+
+  &__group-title {
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1.3;
+    color: var(--e-global-color-primary, #111827);
+  }
+
+  // ── File list ────────────────────────────────────────────────────────
+
+  &__files {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  &__file {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  &__file-icon {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    margin-top: 0.15em;
+    color: var(--e-global-color-primary, #1e3a5f);
+
+    i, svg {
+      font-size: 0.875rem;
+      width: 0.875rem;
+      height: 0.875rem;
+    }
+  }
+
+  &__link {
+    display: inline-flex;
+    align-items: flex-start;
+    gap: 6px;
+    text-decoration: none;
+    color: var(--e-global-color-primary, #1e3a5f);
+    font-size: 0.9375rem;
+    line-height: 1.45;
+    transition: opacity 0.15s ease;
+
+    &:hover {
+      text-decoration: underline;
+      opacity: 0.75;
+    }
+  }
+
+  &__file-title {
+    font-size: 0.9375rem;
+    line-height: 1.45;
+  }
+
+  // ── Empty state ──────────────────────────────────────────────────────
+
+  &__empty {
+    margin: 0;
+    font-size: 0.875rem;
+    color: #9ca3af;
+    font-style: italic;
+  }
+}
+
+// ── Responsive ────────────────────────────────────────────────────────
+
+@media (max-width: 1024px) {
+  .gc-download-list__grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .gc-download-list__grid {
+    grid-template-columns: 1fr;
+  }
+}
