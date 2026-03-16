@@ -46,7 +46,7 @@ class Variant_Picker_Widget extends Widget_Base
       [
         'label'       => __('Überschrift', 'gastro-cool-products'),
         'type'        => Controls_Manager::TEXT,
-        'default'     => __('Varianten', 'gastro-cool-products'),
+        'default'     => __('Verfügbare Varianten', 'gastro-cool-products'),
         'dynamic'     => ['active' => true],
         'label_block' => true,
       ]
@@ -69,29 +69,47 @@ class Variant_Picker_Widget extends Widget_Base
       ]
     );
 
-    $this->add_control(
-      'heading_icon',
-      [
-        'label'   => __('Icon', 'gastro-cool-products'),
-        'type'    => Controls_Manager::ICONS,
-        'default' => ['value' => '', 'library' => ''],
-      ]
-    );
-
     $this->end_controls_section();
 
-    // ── Darstellung ───────────────────────────────────────────────────────
+    // ── Felder ────────────────────────────────────────────────────────────
     $this->start_controls_section(
-      'section_display',
+      'section_fields',
       [
-        'label' => __('Darstellung', 'gastro-cool-products'),
+        'label' => __('Angezeigte Felder', 'gastro-cool-products'),
+      ]
+    );
+
+    foreach ($this->field_labels() as $key => $label) {
+      $this->add_control(
+        'show_' . $key,
+        [
+          'label'        => $label,
+          'type'         => Controls_Manager::SWITCHER,
+          'label_on'     => __('Ja', 'gastro-cool-products'),
+          'label_off'    => __('Nein', 'gastro-cool-products'),
+          'return_value' => 'yes',
+          'default'      => 'yes',
+        ]
+      );
+    }
+
+    $this->add_control(
+      'show_description',
+      [
+        'label'        => __('Beschreibung', 'gastro-cool-products'),
+        'type'         => Controls_Manager::SWITCHER,
+        'label_on'     => __('Ja', 'gastro-cool-products'),
+        'label_off'    => __('Nein', 'gastro-cool-products'),
+        'return_value' => 'yes',
+        'default'      => 'yes',
+        'separator'    => 'before',
       ]
     );
 
     $this->add_control(
-      'show_value',
+      'show_energylabel',
       [
-        'label'        => __('Varianten-Label anzeigen', 'gastro-cool-products'),
+        'label'        => __('Energie-Label (über Bild)', 'gastro-cool-products'),
         'type'         => Controls_Manager::SWITCHER,
         'label_on'     => __('Ja', 'gastro-cool-products'),
         'label_off'    => __('Nein', 'gastro-cool-products'),
@@ -100,30 +118,35 @@ class Variant_Picker_Widget extends Widget_Base
       ]
     );
 
+    // Labels for the DL rows (editable)
     $this->add_control(
-      'show_artno',
+      'heading_labels',
       [
-        'label'        => __('Artikelnummer anzeigen', 'gastro-cool-products'),
-        'type'         => Controls_Manager::SWITCHER,
-        'label_on'     => __('Ja', 'gastro-cool-products'),
-        'label_off'    => __('Nein', 'gastro-cool-products'),
-        'return_value' => 'yes',
-        'default'      => 'no',
+        'label'     => __('Feldbezeichnungen', 'gastro-cool-products'),
+        'type'      => Controls_Manager::HEADING,
+        'separator' => 'before',
       ]
     );
 
-    $this->add_control(
-      'group_label_field',
+    $defaults = $this->field_label_defaults();
+    foreach ($defaults as $key => $default_label) {
+      $this->add_control(
+        'label_' . $key,
+        [
+          'label'   => $default_label,
+          'type'    => Controls_Manager::TEXT,
+          'default' => $default_label,
+        ]
+      );
+    }
+
+    $this->end_controls_section();
+
+    // ── Leer-Text ─────────────────────────────────────────────────────────
+    $this->start_controls_section(
+      'section_empty',
       [
-        'label'       => __('Gruppen-Label', 'gastro-cool-products'),
-        'type'        => Controls_Manager::SELECT,
-        'default'     => 'value',
-        'options'     => [
-          'value'      => __('Varianten-Wert (value)', 'gastro-cool-products'),
-          'base_model' => __('Basis-Modell (base_model)', 'gastro-cool-products'),
-          'none'       => __('Kein Gruppen-Titel', 'gastro-cool-products'),
-        ],
-        'description' => __('Welches Feld wird als Gruppenüberschrift genutzt?', 'gastro-cool-products'),
+        'label' => __('Leer-Zustand', 'gastro-cool-products'),
       ]
     );
 
@@ -139,21 +162,35 @@ class Variant_Picker_Widget extends Widget_Base
     $this->end_controls_section();
   }
 
-  // ── Helper: detect active artno from current product ─────────────────
-  private function get_current_artno(): string {
-    if (! function_exists('get_field')) {
-      return '';
-    }
-    // external_id is the primary product artno
-    $ext = get_field('external_id');
-    if ($ext) {
-      return trim((string) $ext);
-    }
-    return '';
+  // ── Field definitions ─────────────────────────────────────────────────
+  private function field_labels(): array {
+    return [
+      'color_body'     => __('Gehäuse-Farbe', 'gastro-cool-products'),
+      'color_canopy'   => __('Hauben-Farbe',  'gastro-cool-products'),
+      'interior_color' => __('Innenfarbe',    'gastro-cool-products'),
+      'energieklasse'  => __('Energieklasse', 'gastro-cool-products'),
+      'artno'          => __('Art.-Nr.',       'gastro-cool-products'),
+      'ean'            => __('EAN',            'gastro-cool-products'),
+      'eprel'          => __('EPREL-Code',     'gastro-cool-products'),
+      'weight'         => __('Gewicht',        'gastro-cool-products'),
+    ];
   }
 
-  // ── Helper: flatten all options from variants repeater ────────────────
-  private function get_options(): array {
+  private function field_label_defaults(): array {
+    return [
+      'color_body'     => __('Gehäuse',       'gastro-cool-products'),
+      'color_canopy'   => __('Haube',         'gastro-cool-products'),
+      'interior_color' => __('Innenraum',     'gastro-cool-products'),
+      'energieklasse'  => __('Energieklasse', 'gastro-cool-products'),
+      'artno'          => __('Art.-Nr.',       'gastro-cool-products'),
+      'ean'            => __('EAN',            'gastro-cool-products'),
+      'eprel'          => __('EPREL-Code',     'gastro-cool-products'),
+      'weight'         => __('Gewicht',        'gastro-cool-products'),
+    ];
+  }
+
+  // ── Build flat list of variant cards ─────────────────────────────────
+  private function get_cards(): array {
     if (! function_exists('get_field')) {
       return [];
     }
@@ -163,145 +200,155 @@ class Variant_Picker_Widget extends Widget_Base
       return [];
     }
 
-    $groups = [];
+    // Product-level fields (same for all variants)
+    $eprel  = trim((string)(get_field('cust_gc_eprel')  ?? ''));
+    $weight = trim((string)(get_field('weight_raw')     ?? ''));
+    if ($weight === '') {
+      $weight_kg = get_field('net_weight_kg');
+      if ($weight_kg !== null && $weight_kg !== '') {
+        $weight = $weight_kg . ' kg';
+      }
+    }
+
+    $cards = [];
 
     foreach ($variants as $group) {
-      $base_model = trim($group['base_model']  ?? '');
-      $description = trim($group['description'] ?? '');
-      $options_raw = is_array($group['options'] ?? null) ? $group['options'] : [];
+      $color_body     = trim($group['color_body']     ?? '');
+      $color_canopy   = trim($group['color_canopy']   ?? '');
+      $interior_color = trim($group['interior_color'] ?? '');
+      $description    = trim($group['description']    ?? '');
 
-      $options = [];
-      foreach ($options_raw as $opt) {
-        $artno      = trim($opt['artno']      ?? '');
-        $value      = trim($opt['value']      ?? '');
-        $type       = trim($opt['type']       ?? '');
-        $image_url  = trim($opt['image_link'] ?? '');  // stored as URL
-        $additional = trim($opt['additional_info'] ?? '');
+      $options = is_array($group['options'] ?? null) ? $group['options'] : [];
 
-        // Skip completely empty options
-        if ($artno === '' && $value === '' && $image_url === '') {
-          continue;
-        }
+      foreach ($options as $opt) {
+        $img_raw   = $opt['image_link'] ?? '';
+        $image_url = is_array($img_raw)
+          ? trim($img_raw['url'] ?? '')
+          : trim((string) $img_raw);
 
-        $options[] = [
-          'artno'      => $artno,
-          'value'      => $value,
-          'type'       => $type,
-          'image_url'  => $image_url,
-          'additional' => $additional,
-        ];
-      }
-
-      if (! empty($options)) {
-        $groups[] = [
-          'base_model'  => $base_model,
-          'description' => $description,
-          'options'     => $options,
+        $cards[] = [
+          'title'          => trim($opt['value']      ?? ''),
+          'description'    => $description,
+          'image_url'      => $image_url,
+          'link'           => trim($opt['link']       ?? ''),
+          'color_body'     => $color_body,
+          'color_canopy'   => $color_canopy,
+          'interior_color' => $interior_color,
+          'energylabel'    => trim($opt['energylabel'] ?? ''),
+          'artno'          => trim($opt['artno']       ?? ''),
+          'ean'            => trim($opt['ean']         ?? ''),
+          'eprel'          => $eprel,
+          'weight'         => $weight,
         ];
       }
     }
 
-    return $groups;
+    return $cards;
+  }
+
+  // ── Render one DL row ─────────────────────────────────────────────────
+  private function row( string $label, string $value ): void {
+    if ($value === '') {
+      return;
+    }
+    echo '<div class="gc-variant-picker__row">';
+    echo '<dt class="gc-variant-picker__row-label">' . esc_html($label) . '</dt>';
+    echo '<dd class="gc-variant-picker__row-value">' . esc_html($value) . '</dd>';
+    echo '</div>';
   }
 
   protected function render() {
     $settings    = $this->get_settings_for_display();
     $heading     = trim($settings['heading']     ?? '');
     $heading_tag = $settings['heading_tag']       ?? 'h2';
-    $heading_icon = $settings['heading_icon']     ?? [];
-    $show_value  = ($settings['show_value']       ?? '') === 'yes';
-    $show_artno  = ($settings['show_artno']       ?? '') === 'no' ? false : ($settings['show_artno'] === 'yes');
-    $group_label = $settings['group_label_field'] ?? 'value';
     $empty_text  = trim($settings['empty_text']  ?? __('Keine Varianten verfügbar.', 'gastro-cool-products'));
+
+    $show_description  = ($settings['show_description']  ?? '') === 'yes';
+    $show_energylabel  = ($settings['show_energylabel']  ?? '') === 'yes';
+    $show = [];
+    foreach (array_keys($this->field_labels()) as $key) {
+      $show[$key] = ($settings['show_' . $key] ?? '') === 'yes';
+    }
+
+    $labels = [];
+    foreach (array_keys($this->field_label_defaults()) as $key) {
+      $labels[$key] = trim($settings['label_' . $key] ?? '') ?: $this->field_label_defaults()[$key];
+    }
 
     $allowed_tags = ['h2', 'h3', 'h4', 'h5', 'h6', 'div'];
     if (! in_array($heading_tag, $allowed_tags, true)) {
       $heading_tag = 'h2';
     }
 
-    $groups      = $this->get_options();
-    $current_artno = $this->get_current_artno();
+    $cards = $this->get_cards();
 
     echo '<div class="gc-variant-picker">';
 
-    // Heading
     if ($heading !== '') {
-      echo '<' . esc_attr($heading_tag) . ' class="gc-variant-picker__heading">';
-      if (! empty($heading_icon['value'])) {
-        echo '<span class="gc-variant-picker__heading-icon" aria-hidden="true">';
-        \Elementor\Icons_Manager::render_icon($heading_icon, ['aria-hidden' => 'true']);
-        echo '</span>';
-      }
-      echo esc_html($heading);
-      echo '</' . esc_attr($heading_tag) . '>';
+      echo '<' . esc_attr($heading_tag) . ' class="gc-variant-picker__heading">'
+        . esc_html($heading)
+        . '</' . esc_attr($heading_tag) . '>';
     }
 
-    if (empty($groups)) {
+    if (empty($cards)) {
       echo '<p class="gc-variant-picker__empty">' . esc_html($empty_text) . '</p>';
       echo '</div>';
       return;
     }
 
-    foreach ($groups as $group) {
-      echo '<div class="gc-variant-picker__group">';
+    echo '<div class="gc-variant-picker__grid">';
 
-      // Group label
-      if ($group_label !== 'none') {
-        $g_label = $group_label === 'base_model'
-          ? $group['base_model']
-          : ($group['options'][0]['type'] ?? '');
+    foreach ($cards as $card) {
+      $tag  = $card['link'] !== '' ? 'a' : 'div';
+      $attr = $tag === 'a'
+        ? ' href="' . esc_url($card['link']) . '" class="gc-variant-picker__card"'
+        : ' class="gc-variant-picker__card"';
 
-        if ($g_label !== '') {
-          echo '<p class="gc-variant-picker__group-label">' . esc_html($g_label) . '</p>';
-        }
+      echo '<' . $tag . $attr . '>';
+
+      // Image area + energy label badge
+      echo '<div class="gc-variant-picker__image-wrap">';
+      if ($card['image_url'] !== '') {
+        echo '<img class="gc-variant-picker__img"'
+          . ' src="' . esc_url($card['image_url']) . '"'
+          . ' alt="' . esc_attr($card['title']) . '"'
+          . ' loading="lazy">';
+      }
+      if ($show_energylabel && $card['energylabel'] !== '') {
+        echo '<span class="gc-variant-picker__energylabel">'
+          . esc_html($card['energylabel'])
+          . '</span>';
+      }
+      echo '</div>';
+
+      // Content
+      echo '<div class="gc-variant-picker__content">';
+
+      if ($card['title'] !== '') {
+        echo '<p class="gc-variant-picker__title">' . esc_html($card['title']) . '</p>';
       }
 
-      echo '<div class="gc-variant-picker__options">';
-
-      foreach ($group['options'] as $option) {
-        $is_active = ($current_artno !== '' && $option['artno'] === $current_artno);
-        $card_class = 'gc-variant-picker__option' . ($is_active ? ' is-active' : '');
-
-        echo '<div class="' . esc_attr($card_class) . '"'
-          . ' aria-current="' . ($is_active ? 'true' : 'false') . '"'
-          . '>';
-
-        // Image
-        echo '<div class="gc-variant-picker__image">';
-        if ($option['image_url'] !== '') {
-          echo '<img'
-            . ' src="' . esc_url($option['image_url']) . '"'
-            . ' alt="' . esc_attr($option['value'] !== '' ? $option['value'] : $option['artno']) . '"'
-            . ' loading="lazy"'
-            . '>';
-        } else {
-          echo '<span class="gc-variant-picker__no-image" aria-hidden="true"></span>';
-        }
-        echo '</div>';
-
-        // Meta
-        echo '<div class="gc-variant-picker__meta">';
-
-        if ($show_value && $option['value'] !== '') {
-          echo '<span class="gc-variant-picker__value">' . esc_html($option['value']) . '</span>';
-        }
-
-        if ($option['additional'] !== '') {
-          echo '<span class="gc-variant-picker__additional">' . esc_html($option['additional']) . '</span>';
-        }
-
-        if ($show_artno && $option['artno'] !== '') {
-          echo '<span class="gc-variant-picker__artno">' . esc_html($option['artno']) . '</span>';
-        }
-
-        echo '</div>'; // meta
-        echo '</div>'; // option
+      if ($show_description && $card['description'] !== '') {
+        echo '<p class="gc-variant-picker__description">' . esc_html($card['description']) . '</p>';
       }
 
-      echo '</div>'; // options
-      echo '</div>'; // group
+      // Definition list
+      echo '<dl class="gc-variant-picker__dl">';
+      if ($show['color_body'])     $this->row($labels['color_body'],     $card['color_body']);
+      if ($show['color_canopy'])   $this->row($labels['color_canopy'],   $card['color_canopy']);
+      if ($show['interior_color']) $this->row($labels['interior_color'], $card['interior_color']);
+      if ($show['energieklasse'])  $this->row($labels['energieklasse'],  $card['energylabel']);
+      if ($show['artno'])          $this->row($labels['artno'],          $card['artno']);
+      if ($show['ean'])            $this->row($labels['ean'],            $card['ean']);
+      if ($show['eprel'])          $this->row($labels['eprel'],          $card['eprel']);
+      if ($show['weight'])         $this->row($labels['weight'],         $card['weight']);
+      echo '</dl>';
+
+      echo '</div>'; // content
+      echo '</' . $tag . '>';
     }
 
+    echo '</div>'; // grid
     echo '</div>'; // gc-variant-picker
   }
 }

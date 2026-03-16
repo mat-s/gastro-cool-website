@@ -155,20 +155,21 @@ class Product_Video_Widget extends Widget_Base
 
   // ── Helper: render YouTube iframe ────────────────────────────────────
   private function render_youtube( string $youtube_id, bool $privacy, string $title ): void {
-    $domain = $privacy ? 'www.youtube-nocookie.com' : 'www.youtube.com';
-    $src    = 'https://' . $domain . '/embed/' . rawurlencode($youtube_id)
-            . '?rel=0&modestbranding=1';
-
-    echo '<div class="gc-product-video__ratio">';
-    echo '<iframe'
-      . ' class="gc-product-video__iframe"'
-      . ' src="' . esc_url($src) . '"'
-      . ' title="' . esc_attr($title !== '' ? $title : __('Produktvideo', 'gastro-cool-products')) . '"'
-      . ' allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"'
-      . ' allowfullscreen'
-      . ' loading="lazy"'
-      . '></iframe>';
-    echo '</div>';
+    $domain      = $privacy ? 'www.youtube-nocookie.com' : 'www.youtube.com';
+    $src         = 'https://' . $domain . '/embed/' . rawurlencode($youtube_id) . '?rel=0&modestbranding=1';
+    $iframe_title = $title !== '' ? $title : __('Produktvideo', 'gastro-cool-products');
+    ?>
+    <div class="gc-product-video__ratio">
+      <iframe
+        class="gc-product-video__iframe"
+        src="<?php echo esc_url($src); ?>"
+        title="<?php echo esc_attr($iframe_title); ?>"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowfullscreen
+        loading="lazy"
+      ></iframe>
+    </div>
+    <?php
   }
 
   // ── Helper: render HTML5 video ────────────────────────────────────────
@@ -184,23 +185,25 @@ class Product_Video_Widget extends Widget_Base
     if (! $url) {
       return;
     }
-
-    echo '<div class="gc-product-video__ratio">';
-    echo '<video class="gc-product-video__html5" controls preload="metadata"'
-      . ($title !== '' ? ' aria-label="' . esc_attr($title) . '"' : '') . '>';
-    echo '<source src="' . esc_url($url) . '">';
-    echo '</video>';
-    echo '</div>';
+    ?>
+    <div class="gc-product-video__ratio">
+      <video class="gc-product-video__html5" controls preload="metadata"<?php if ($title !== '') : ?> aria-label="<?php echo esc_attr($title); ?>"<?php endif; ?>>
+        <source src="<?php echo esc_url($url); ?>">
+      </video>
+    </div>
+    <?php
   }
 
   // ── Helper: empty state ───────────────────────────────────────────────
   private function render_empty( string $text ): void {
-    echo '<div class="gc-product-video__ratio gc-product-video__ratio--empty">';
-    echo '<div class="gc-product-video__empty">';
-    echo '<svg class="gc-product-video__play-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3"/></svg>';
-    echo '<span>' . esc_html($text) . '</span>';
-    echo '</div>';
-    echo '</div>';
+    ?>
+    <div class="gc-product-video__ratio gc-product-video__ratio--empty">
+      <div class="gc-product-video__empty">
+        <svg class="gc-product-video__play-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        <span><?php echo esc_html($text); ?></span>
+      </div>
+    </div>
+    <?php
   }
 
   protected function render() {
@@ -223,68 +226,65 @@ class Product_Video_Widget extends Widget_Base
       return;
     }
 
-    echo '<div class="gc-product-video">';
+    $has_multiple = count($videos) > 1;
+    ?>
+    <div class="gc-product-video">
 
-    // Heading
-    if ($heading !== '') {
-      echo '<' . esc_attr($heading_tag) . ' class="gc-product-video__heading">';
-      if (! empty($heading_icon['value'])) {
-        echo '<span class="gc-product-video__heading-icon" aria-hidden="true">';
-        \Elementor\Icons_Manager::render_icon($heading_icon, ['aria-hidden' => 'true']);
-        echo '</span>';
-      }
-      echo esc_html($heading);
-      echo '</' . esc_attr($heading_tag) . '>';
-    }
+      <?php if ($heading !== '') : ?>
+        <<?php echo esc_attr($heading_tag); ?> class="gc-product-video__heading">
+          <?php if (! empty($heading_icon['value'])) : ?>
+            <span class="gc-product-video__heading-icon" aria-hidden="true">
+              <?php \Elementor\Icons_Manager::render_icon($heading_icon, ['aria-hidden' => 'true']); ?>
+            </span>
+          <?php endif; ?>
+          <?php echo esc_html($heading); ?>
+        </<?php echo esc_attr($heading_tag); ?>>
+      <?php endif; ?>
 
-    // Card
-    echo '<div class="gc-product-video__card">';
+      <div class="gc-product-video__card">
 
-    {
-      // Render all videos; if multiple, show tabs header first
-      $has_multiple = count($videos) > 1;
+        <?php if ($has_multiple) : ?>
+          <div class="gc-product-video__tabs" role="tablist">
+            <?php foreach ($videos as $index => $video) :
+              $tab_label = $video['title'] !== ''
+                ? $video['title']
+                : sprintf(__('Video %d', 'gastro-cool-products'), $index + 1);
+            ?>
+              <button
+                class="gc-product-video__tab<?php echo $index === 0 ? ' is-active' : ''; ?>"
+                type="button"
+                role="tab"
+                aria-selected="<?php echo $index === 0 ? 'true' : 'false'; ?>"
+                data-index="<?php echo esc_attr($index); ?>"
+              ><?php echo esc_html($tab_label); ?></button>
+            <?php endforeach; ?>
+          </div>
+        <?php endif; ?>
 
-      if ($has_multiple) {
-        echo '<div class="gc-product-video__tabs" role="tablist">';
-        foreach ($videos as $index => $video) {
-          $tab_label = $video['title'] !== ''
-            ? $video['title']
-            : sprintf(__('Video %d', 'gastro-cool-products'), $index + 1);
-          echo '<button'
-            . ' class="gc-product-video__tab' . ($index === 0 ? ' is-active' : '') . '"'
-            . ' type="button"'
-            . ' role="tab"'
-            . ' aria-selected="' . ($index === 0 ? 'true' : 'false') . '"'
-            . ' data-index="' . esc_attr($index) . '"'
-            . '>' . esc_html($tab_label) . '</button>';
-        }
-        echo '</div>';
-      }
+        <?php foreach ($videos as $index => $video) :
+          $panel_class = 'gc-product-video__panel';
+          if ($has_multiple) {
+            $panel_class .= $index === 0 ? ' is-active' : ' is-hidden';
+          }
+        ?>
+          <div class="<?php echo esc_attr($panel_class); ?>" data-index="<?php echo esc_attr($index); ?>">
 
-      foreach ($videos as $index => $video) {
-        $panel_class = 'gc-product-video__panel';
-        if ($has_multiple) {
-          $panel_class .= $index === 0 ? ' is-active' : ' is-hidden';
-        }
+            <?php if ($video['youtube_id'] !== '') : ?>
+              <?php $this->render_youtube($video['youtube_id'], $privacy, $video['title']); ?>
+            <?php else : ?>
+              <?php $this->render_video_file($video['video_file'], $video['title']); ?>
+            <?php endif; ?>
 
-        echo '<div class="' . esc_attr($panel_class) . '" data-index="' . esc_attr($index) . '">';
+            <?php if ($show_title && $video['title'] !== '') : ?>
+              <p class="gc-product-video__title"><?php echo esc_html($video['title']); ?></p>
+            <?php endif; ?>
 
-        if ($video['youtube_id'] !== '') {
-          $this->render_youtube($video['youtube_id'], $privacy, $video['title']);
-        } else {
-          $this->render_video_file($video['video_file'], $video['title']);
-        }
+          </div>
+        <?php endforeach; ?>
 
-        if ($show_title && $video['title'] !== '') {
-          echo '<p class="gc-product-video__title">' . esc_html($video['title']) . '</p>';
-        }
+      </div><!-- .gc-product-video__card -->
 
-        echo '</div>';
-      }
-    }
-
-    echo '</div>'; // .gc-product-video__card
-
-    echo '</div>'; // .gc-product-video
+    </div><!-- .gc-product-video -->
+    <?php
   }
 }

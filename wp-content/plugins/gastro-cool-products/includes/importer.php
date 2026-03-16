@@ -444,28 +444,38 @@ function gcp_media_sideload_product_img($src_url, $post_id, $new_basename, $alt_
   return $att_id;
 }
 
-function gcp_extract_variants(SimpleXMLElement $item){
+function gcp_extract_variants(SimpleXMLElement $item, int $post_id = 0){
   $out = [];
   $groups = $item->variants->variant_group ?? null;
   if (! isset($groups[0])) return $out;
   foreach ($groups as $g){
     $group = [
-      'base_model' => (string)$g->base_model,
-      'can_size' => (string)$g->can_size,
-      'capacity' => (string)$g->capacity,
-      'volume' => (string)$g->volume,
-      'description' => (string)$g->description,
-      'options' => [],
+      'base_model'     => (string)$g->base_model,
+      'can_size'       => (string)$g->can_size,
+      'capacity'       => (string)$g->capacity,
+      'volume'         => (string)$g->volume,
+      'color_body'     => (string)$g->color_body,
+      'color_canopy'   => (string)$g->color_canopy,
+      'interior_color' => (string)$g->interior_color,
+      'description'    => (string)$g->description,
+      'options'        => [],
     ];
     if (isset($g->options->option[0])){
       foreach ($g->options->option as $opt){
+        $img_url = trim((string)$opt->image_link);
+        $img_id  = 0;
+        if ($img_url !== '' && $post_id > 0) {
+          $img_id = gcp_media_sideload_url($img_url, $post_id);
+        }
         $group['options'][] = [
-          'artno' => (string)$opt->artno,
-          'type' => (string)$opt->type,
-          'value' => (string)$opt->value,
-          'ean' => (string)$opt->ean,
+          'artno'           => (string)$opt->artno,
+          'type'            => (string)$opt->type,
+          'value'           => (string)$opt->value,
+          'ean'             => (string)$opt->ean,
+          'energylabel'     => (string)$opt->energylabel,
+          'link'            => esc_url_raw(trim((string)$opt->link)),
           'additional_info' => (string)$opt->additional_info,
-          'image_link' => (string)$opt->image_link,
+          'image_link'      => $img_id > 0 ? $img_id : $img_url,
         ];
       }
     }
@@ -864,7 +874,7 @@ function gcp_import_process_item(SimpleXMLElement $item, $download_images, &$cou
   }
 
   // Variants as ACF repeater
-  $variants = gcp_extract_variants($item);
+  $variants = gcp_extract_variants($item, $post_id);
   if ($variants) gcp_update_field_safe('variants', $variants, $post_id);
 
   // Videos (supports multiple entries)
