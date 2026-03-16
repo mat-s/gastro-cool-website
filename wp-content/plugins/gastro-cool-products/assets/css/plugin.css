@@ -1147,6 +1147,11 @@ body.gc-inquiry-overlay-open {
   color: #9ca3af;
 }
 
+.gc-download-list {
+  margin-top: 3rem;
+  border-top: 1px solid #e5e7eb;
+  padding-top: 3rem;
+}
 .gc-download-list__heading {
   display: flex;
   align-items: center;
@@ -1254,10 +1259,15 @@ body.gc-inquiry-overlay-open {
     grid-template-columns: 1fr;
   }
 }
+.gc-energy-card {
+  margin-top: 3rem;
+  border-top: 1px solid #e5e7eb;
+  padding-top: 3rem;
+}
 .gc-energy-card__header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: 16px;
   margin: 0 0 20px;
 }
@@ -1325,6 +1335,12 @@ body.gc-inquiry-overlay-open {
   flex-shrink: 0;
   display: flex;
   align-items: center;
+}
+.gc-energy-card__label-button .energybutton img {
+  height: 100%;
+  max-height: 40px;
+  width: auto;
+  display: block;
 }
 
 .gc-product-video {
@@ -1431,6 +1447,11 @@ body.gc-inquiry-overlay-open {
   background: #f3f4f6;
 }
 
+.gc-variant-picker {
+  margin-top: 3rem;
+  border-top: 1px solid #e5e7eb;
+  padding-top: 3rem;
+}
 .gc-variant-picker__heading {
   margin: 0 0 24px;
   font-size: 1.25rem;

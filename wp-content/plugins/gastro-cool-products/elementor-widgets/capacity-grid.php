@@ -213,32 +213,33 @@ class Capacity_Grid_Widget extends Widget_Base
     if (empty($items)) {
       return;
     }
+    ?>
+    <div class="gc-capacity-grid__row">
+      <?php foreach ($items as $item) : ?>
+        <div class="gc-capacity-grid__item">
 
-    echo '<div class="gc-capacity-grid__row">';
+          <?php if (! empty($item['image']['url'])) : ?>
+            <div class="gc-capacity-grid__image">
+              <img src="<?= esc_url($item['image']['url']) ?>" alt="<?= esc_attr($item['label']) ?>" loading="lazy">
+            </div>
+          <?php endif; ?>
 
-    foreach ($items as $item) {
-      echo '<div class="gc-capacity-grid__item">';
+          <div class="gc-capacity-grid__meta">
 
-      if (! empty($item['image']['url'])) {
-        echo '<div class="gc-capacity-grid__image">';
-        echo '<img src="' . esc_url($item['image']['url']) . '" alt="' . esc_attr($item['label']) . '" loading="lazy">';
-        echo '</div>';
-      }
+            <?php if ($item['label'] !== '') : ?>
+              <span class="gc-capacity-grid__label"><?= esc_html($item['label']) ?></span>
+            <?php endif; ?>
 
-      echo '<div class="gc-capacity-grid__meta">';
+            <?php
+            $qty_class = ! empty($item['empty']) ? 'gc-capacity-grid__quantity gc-capacity-grid__quantity--empty' : 'gc-capacity-grid__quantity';
+            ?>
+            <span class="<?= esc_attr($qty_class) ?>"><?= esc_html($item['quantity']) ?></span>
 
-      if ($item['label'] !== '') {
-        echo '<span class="gc-capacity-grid__label">' . esc_html($item['label']) . '</span>';
-      }
-
-      $qty_class = ! empty($item['empty']) ? 'gc-capacity-grid__quantity gc-capacity-grid__quantity--empty' : 'gc-capacity-grid__quantity';
-      echo '<span class="' . esc_attr($qty_class) . '">' . esc_html($item['quantity']) . '</span>';
-
-      echo '</div>';
-      echo '</div>';
-    }
-
-    echo '</div>';
+          </div>
+        </div>
+      <?php endforeach; ?>
+    </div>
+    <?php
   }
 
   protected function render() {
@@ -263,21 +264,20 @@ class Capacity_Grid_Widget extends Widget_Base
       $this->get_item($settings, 'bottles_050'),
       $this->get_item($settings, 'bottles_070'),
     ];
+    ?>
+    <div class="gc-capacity-grid">
 
-    echo '<div class="gc-capacity-grid">';
+      <?php if ($heading !== '') : ?>
+        <<?= esc_attr($heading_tag) ?> class="gc-capacity-grid__heading"><?= esc_html($heading) ?></<?= esc_attr($heading_tag) ?>>
+      <?php endif; ?>
 
-    if ($heading !== '') {
-      echo '<' . esc_attr($heading_tag) . ' class="gc-capacity-grid__heading">'
-        . esc_html($heading)
-        . '</' . esc_attr($heading_tag) . '>';
-    }
+      <?php $this->render_row($cans); ?>
 
-    $this->render_row($cans);
+      <hr class="gc-capacity-grid__separator">
 
-    echo '<hr class="gc-capacity-grid__separator">';
+      <?php $this->render_row($bottles); ?>
 
-    $this->render_row($bottles);
-
-    echo '</div>';
+    </div>
+    <?php
   }
 }

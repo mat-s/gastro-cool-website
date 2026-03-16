@@ -251,10 +251,12 @@ class Variant_Picker_Widget extends Widget_Base
     if ($value === '') {
       return;
     }
-    echo '<div class="gc-variant-picker__row">';
-    echo '<dt class="gc-variant-picker__row-label">' . esc_html($label) . '</dt>';
-    echo '<dd class="gc-variant-picker__row-value">' . esc_html($value) . '</dd>';
-    echo '</div>';
+    ?>
+    <div class="gc-variant-picker__row">
+      <dt class="gc-variant-picker__row-label"><?= esc_html($label) ?></dt>
+      <dd class="gc-variant-picker__row-value"><?= esc_html($value) ?></dd>
+    </div>
+    <?php
   }
 
   protected function render() {
@@ -281,74 +283,70 @@ class Variant_Picker_Widget extends Widget_Base
     }
 
     $cards = $this->get_cards();
+    ?>
+    <div class="gc-variant-picker">
 
-    echo '<div class="gc-variant-picker">';
+      <?php if ($heading !== '') : ?>
+        <<?= esc_attr($heading_tag) ?> class="gc-variant-picker__heading"><?= esc_html($heading) ?></<?= esc_attr($heading_tag) ?>>
+      <?php endif; ?>
 
-    if ($heading !== '') {
-      echo '<' . esc_attr($heading_tag) . ' class="gc-variant-picker__heading">'
-        . esc_html($heading)
-        . '</' . esc_attr($heading_tag) . '>';
-    }
+      <?php if (empty($cards)) : ?>
+        <p class="gc-variant-picker__empty"><?= esc_html($empty_text) ?></p>
+      </div>
+      <?php return; endif; ?>
 
-    if (empty($cards)) {
-      echo '<p class="gc-variant-picker__empty">' . esc_html($empty_text) . '</p>';
-      echo '</div>';
-      return;
-    }
+      <div class="gc-variant-picker__grid">
 
-    echo '<div class="gc-variant-picker__grid">';
+        <?php foreach ($cards as $card) : ?>
+          <?php
+          $tag  = $card['link'] !== '' ? 'a' : 'div';
+          $attr = $tag === 'a'
+            ? ' href="' . esc_url($card['link']) . '" class="gc-variant-picker__card"'
+            : ' class="gc-variant-picker__card"';
+          ?>
+          <<?= $tag . $attr ?>>
 
-    foreach ($cards as $card) {
-      $tag  = $card['link'] !== '' ? 'a' : 'div';
-      $attr = $tag === 'a'
-        ? ' href="' . esc_url($card['link']) . '" class="gc-variant-picker__card"'
-        : ' class="gc-variant-picker__card"';
+            <div class="gc-variant-picker__image-wrap">
+              <?php if ($card['image_url'] !== '') : ?>
+                <img class="gc-variant-picker__img"
+                  src="<?= esc_url($card['image_url']) ?>"
+                  alt="<?= esc_attr($card['title']) ?>"
+                  loading="lazy">
+              <?php endif; ?>
+              <?php if ($show_energylabel && $card['energylabel'] !== '') : ?>
+                <span class="gc-variant-picker__energylabel"><?= esc_html($card['energylabel']) ?></span>
+              <?php endif; ?>
+            </div>
 
-      echo '<' . $tag . $attr . '>';
+            <div class="gc-variant-picker__content">
 
-      // Image area + energy label badge
-      echo '<div class="gc-variant-picker__image-wrap">';
-      if ($card['image_url'] !== '') {
-        echo '<img class="gc-variant-picker__img"'
-          . ' src="' . esc_url($card['image_url']) . '"'
-          . ' alt="' . esc_attr($card['title']) . '"'
-          . ' loading="lazy">';
-      }
-      if ($show_energylabel && $card['energylabel'] !== '') {
-        echo '<span class="gc-variant-picker__energylabel">'
-          . esc_html($card['energylabel'])
-          . '</span>';
-      }
-      echo '</div>';
+              <?php if ($card['title'] !== '') : ?>
+                <p class="gc-variant-picker__title"><?= esc_html($card['title']) ?></p>
+              <?php endif; ?>
 
-      // Content
-      echo '<div class="gc-variant-picker__content">';
+              <?php if ($show_description && $card['description'] !== '') : ?>
+                <p class="gc-variant-picker__description"><?= esc_html($card['description']) ?></p>
+              <?php endif; ?>
 
-      if ($card['title'] !== '') {
-        echo '<p class="gc-variant-picker__title">' . esc_html($card['title']) . '</p>';
-      }
+              <dl class="gc-variant-picker__dl">
+                <?php if ($show['color_body'])     $this->row($labels['color_body'],     $card['color_body']); ?>
+                <?php if ($show['color_canopy'])   $this->row($labels['color_canopy'],   $card['color_canopy']); ?>
+                <?php if ($show['interior_color']) $this->row($labels['interior_color'], $card['interior_color']); ?>
+                <?php if ($show['energieklasse'])  $this->row($labels['energieklasse'],  $card['energylabel']); ?>
+                <?php if ($show['artno'])          $this->row($labels['artno'],          $card['artno']); ?>
+                <?php if ($show['ean'])            $this->row($labels['ean'],            $card['ean']); ?>
+                <?php if ($show['eprel'])          $this->row($labels['eprel'],          $card['eprel']); ?>
+                <?php if ($show['weight'])         $this->row($labels['weight'],         $card['weight']); ?>
+              </dl>
 
-      if ($show_description && $card['description'] !== '') {
-        echo '<p class="gc-variant-picker__description">' . esc_html($card['description']) . '</p>';
-      }
+            </div><!-- .gc-variant-picker__content -->
 
-      // Definition list
-      echo '<dl class="gc-variant-picker__dl">';
-      if ($show['color_body'])     $this->row($labels['color_body'],     $card['color_body']);
-      if ($show['color_canopy'])   $this->row($labels['color_canopy'],   $card['color_canopy']);
-      if ($show['interior_color']) $this->row($labels['interior_color'], $card['interior_color']);
-      if ($show['energieklasse'])  $this->row($labels['energieklasse'],  $card['energylabel']);
-      if ($show['artno'])          $this->row($labels['artno'],          $card['artno']);
-      if ($show['ean'])            $this->row($labels['ean'],            $card['ean']);
-      if ($show['eprel'])          $this->row($labels['eprel'],          $card['eprel']);
-      if ($show['weight'])         $this->row($labels['weight'],         $card['weight']);
-      echo '</dl>';
+          </<?= $tag ?>>
+        <?php endforeach; ?>
 
-      echo '</div>'; // content
-      echo '</' . $tag . '>';
-    }
+      </div><!-- .gc-variant-picker__grid -->
 
-    echo '</div>'; // grid
-    echo '</div>'; // gc-variant-picker
+    </div><!-- .gc-variant-picker -->
+    <?php
   }
 }

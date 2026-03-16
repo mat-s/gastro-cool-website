@@ -162,52 +162,50 @@ class Download_List_Widget extends Widget_Base
         $items = $raw;
       }
     }
+    ?>
+    <div class="gc-download-list__group">
 
-    echo '<div class="gc-download-list__group">';
+      <div class="gc-download-list__group-heading">
+        <?php if (! empty($icon['value'])) : ?>
+          <span class="gc-download-list__group-icon" aria-hidden="true">
+            <?php \Elementor\Icons_Manager::render_icon($icon, ['aria-hidden' => 'true']); ?>
+          </span>
+        <?php endif; ?>
+        <?php if ($heading !== '') : ?>
+          <span class="gc-download-list__group-title"><?= esc_html($heading) ?></span>
+        <?php endif; ?>
+      </div>
 
-    // Group heading with icon
-    echo '<div class="gc-download-list__group-heading">';
-    if (! empty($icon['value'])) {
-      echo '<span class="gc-download-list__group-icon" aria-hidden="true">';
-      \Elementor\Icons_Manager::render_icon($icon, ['aria-hidden' => 'true']);
-      echo '</span>';
-    }
-    if ($heading !== '') {
-      echo '<span class="gc-download-list__group-title">' . esc_html($heading) . '</span>';
-    }
-    echo '</div>';
+      <?php if (! empty($items)) : ?>
+        <ul class="gc-download-list__files">
+          <?php foreach ($items as $row) : ?>
+            <?php
+            $title    = trim($row['title']    ?? '');
+            $file_url = $this->resolve_url($row, $acf_name);
 
-    // Files or empty state
-    if (! empty($items)) {
-      echo '<ul class="gc-download-list__files">';
-      foreach ($items as $row) {
-        $title    = trim($row['title']    ?? '');
-        $file_url = $this->resolve_url($row, $acf_name);
+            if ($file_url === '' && $title === '') {
+              continue;
+            }
+            ?>
+            <li class="gc-download-list__file">
+              <?php if ($file_url !== '') : ?>
+                <a class="gc-download-list__link" href="<?= esc_url($file_url) ?>" target="_blank" rel="noopener">
+                  <span class="gc-download-list__file-icon" aria-hidden="true"><i class="far fa-file"></i></span>
+                  <span class="gc-download-list__file-title"><?= esc_html($title !== '' ? $title : $file_url) ?></span>
+                </a>
+              <?php else : ?>
+                <span class="gc-download-list__file-icon" aria-hidden="true"><i class="far fa-file"></i></span>
+                <span class="gc-download-list__file-title"><?= esc_html($title) ?></span>
+              <?php endif; ?>
+            </li>
+          <?php endforeach; ?>
+        </ul>
+      <?php else : ?>
+        <p class="gc-download-list__empty"><?= esc_html($empty_text) ?></p>
+      <?php endif; ?>
 
-        if ($file_url === '' && $title === '') {
-          continue;
-        }
-
-        echo '<li class="gc-download-list__file">';
-
-        if ($file_url !== '') {
-          echo '<a class="gc-download-list__link" href="' . esc_url($file_url) . '" target="_blank" rel="noopener">';
-          echo '<span class="gc-download-list__file-icon" aria-hidden="true"><i class="far fa-file"></i></span>';
-          echo '<span class="gc-download-list__file-title">' . esc_html($title !== '' ? $title : $file_url) . '</span>';
-          echo '</a>';
-        } else {
-          echo '<span class="gc-download-list__file-icon" aria-hidden="true"><i class="far fa-file"></i></span>';
-          echo '<span class="gc-download-list__file-title">' . esc_html($title) . '</span>';
-        }
-
-        echo '</li>';
-      }
-      echo '</ul>';
-    } else {
-      echo '<p class="gc-download-list__empty">' . esc_html($empty_text) . '</p>';
-    }
-
-    echo '</div>';
+    </div>
+    <?php
   }
 
   protected function render() {
@@ -221,29 +219,27 @@ class Download_List_Widget extends Widget_Base
     if (! in_array($heading_tag, $allowed_tags, true)) {
       $heading_tag = 'h2';
     }
+    ?>
+    <div class="gc-download-list">
 
-    echo '<div class="gc-download-list">';
+      <?php if ($heading !== '') : ?>
+        <<?= esc_attr($heading_tag) ?> class="gc-download-list__heading">
+          <?php if (! empty($heading_icon['value'])) : ?>
+            <span class="gc-download-list__heading-icon" aria-hidden="true">
+              <?php \Elementor\Icons_Manager::render_icon($heading_icon, ['aria-hidden' => 'true']); ?>
+            </span>
+          <?php endif; ?>
+          <?= esc_html($heading) ?>
+        </<?= esc_attr($heading_tag) ?>>
+      <?php endif; ?>
 
-    // Widget heading
-    if ($heading !== '') {
-      echo '<' . esc_attr($heading_tag) . ' class="gc-download-list__heading">';
-      if (! empty($heading_icon['value'])) {
-        echo '<span class="gc-download-list__heading-icon" aria-hidden="true">';
-        \Elementor\Icons_Manager::render_icon($heading_icon, ['aria-hidden' => 'true']);
-        echo '</span>';
-      }
-      echo esc_html($heading);
-      echo '</' . esc_attr($heading_tag) . '>';
-    }
+      <div class="gc-download-list__grid">
+        <?php foreach ($this->groups() as [$prefix, $acf_name]) : ?>
+          <?php $this->render_group($settings, $prefix, $acf_name, $empty_text); ?>
+        <?php endforeach; ?>
+      </div>
 
-    // Grid of groups
-    echo '<div class="gc-download-list__grid">';
-
-    foreach ($this->groups() as [$prefix, $acf_name]) {
-      $this->render_group($settings, $prefix, $acf_name, $empty_text);
-    }
-
-    echo '</div>';
-    echo '</div>';
+    </div>
+    <?php
   }
 }

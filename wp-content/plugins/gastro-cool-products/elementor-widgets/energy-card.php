@@ -242,67 +242,68 @@ class Energy_Card_Widget extends Widget_Base
       $heading_tag = 'h2';
     }
 
-    echo '<div class="gc-energy-card">';
-
     // Heading row (title left, energy label button right)
     $button_html = '';
     if ($show_button && function_exists('get_field')) {
       $button_html = get_field('energy_button_html') ?? '';
     }
+    ?>
+    <div class="gc-energy-card">
 
-    if ($heading !== '' || $button_html !== '') {
-      echo '<div class="gc-energy-card__header">';
+      <?php if ($heading !== '' || $button_html !== '') : ?>
+        <div class="gc-energy-card__header">
 
-      if ($heading !== '') {
-        echo '<' . esc_attr($heading_tag) . ' class="gc-energy-card__heading">';
-        if (! empty($heading_icon['value'])) {
-          echo '<span class="gc-energy-card__heading-icon" aria-hidden="true">';
-          \Elementor\Icons_Manager::render_icon($heading_icon, ['aria-hidden' => 'true']);
-          echo '</span>';
-        }
-        echo esc_html($heading);
-        echo '</' . esc_attr($heading_tag) . '>';
-      }
+          <?php if ($heading !== '') : ?>
+            <<?= esc_attr($heading_tag) ?> class="gc-energy-card__heading">
+              <?php if (! empty($heading_icon['value'])) : ?>
+                <span class="gc-energy-card__heading-icon" aria-hidden="true">
+                  <?php \Elementor\Icons_Manager::render_icon($heading_icon, ['aria-hidden' => 'true']); ?>
+                </span>
+              <?php endif; ?>
+              <?= esc_html($heading) ?>
+            </<?= esc_attr($heading_tag) ?>>
+          <?php endif; ?>
 
-      if ($button_html !== '') {
-        echo '<div class="gc-energy-card__label-button">';
-        echo wp_kses_post($button_html);
-        echo '</div>';
-      }
+          <?php if ($button_html !== '') : ?>
+            <div class="gc-energy-card__label-button">
+              <?php echo wp_kses_post($button_html); ?>
+            </div>
+          <?php endif; ?>
 
-      echo '</div>';
-    }
+        </div>
+      <?php endif; ?>
 
-    // Card
-    echo '<div class="gc-energy-card__card">';
-    echo '<dl class="gc-energy-card__rows">';
+      <div class="gc-energy-card__card">
+        <dl class="gc-energy-card__rows">
 
-    foreach ($rows as $row) {
-      $label     = trim($row['label']    ?? '');
-      $acf_field = sanitize_key($row['acf_field'] ?? '');
-      $appendix  = trim($row['appendix'] ?? '');
+          <?php foreach ($rows as $row) : ?>
+            <?php
+            $label     = trim($row['label']    ?? '');
+            $acf_field = sanitize_key($row['acf_field'] ?? '');
+            $appendix  = trim($row['appendix'] ?? '');
 
-      $value = '';
-      if ($acf_field && function_exists('get_field')) {
-        $value = $this->format_acf_value(get_field($acf_field));
-      }
+            $value = '';
+            if ($acf_field && function_exists('get_field')) {
+              $value = $this->format_acf_value(get_field($acf_field));
+            }
 
-      $is_empty   = ($value === '');
-      $display    = $is_empty ? $empty_text : $value . ($appendix !== '' ? ' ' . $appendix : '');
-      $row_class  = 'gc-energy-card__row elementor-repeater-item-' . esc_attr($row['_id'] ?? '');
-      if ($is_empty) {
-        $row_class .= ' gc-energy-card__row--empty';
-      }
+            $is_empty  = ($value === '');
+            $display   = $is_empty ? $empty_text : $value . ($appendix !== '' ? ' ' . $appendix : '');
+            $row_class = 'gc-energy-card__row elementor-repeater-item-' . esc_attr($row['_id'] ?? '');
+            if ($is_empty) {
+              $row_class .= ' gc-energy-card__row--empty';
+            }
+            ?>
+            <div class="<?= esc_attr($row_class) ?>">
+              <dt class="gc-energy-card__label"><?= esc_html($label) ?></dt>
+              <dd class="gc-energy-card__value"><?= esc_html($display) ?></dd>
+            </div>
+          <?php endforeach; ?>
 
-      echo '<div class="' . esc_attr($row_class) . '">';
-      echo '<dt class="gc-energy-card__label">' . esc_html($label) . '</dt>';
-      echo '<dd class="gc-energy-card__value">' . esc_html($display) . '</dd>';
-      echo '</div>';
-    }
+        </dl>
+      </div><!-- .gc-energy-card__card -->
 
-    echo '</dl>';
-    echo '</div>'; // .gc-energy-card__card
-
-    echo '</div>'; // .gc-energy-card
+    </div><!-- .gc-energy-card -->
+    <?php
   }
 }
