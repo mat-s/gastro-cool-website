@@ -281,6 +281,61 @@ class Variant_Picker_Widget extends Widget_Base
       </div><!-- .gc-variant-picker__grid -->
 
     </div><!-- .gc-variant-picker -->
+
     <?php
+    // ── JSON-LD: Product schema per variant ───────────────────────────────
+    if (! empty($cards)) {
+      $product_title = (string) get_the_title();
+      $schema_items  = [];
+
+      foreach ($cards as $card) {
+        $name = $product_title !== ''
+          ? $product_title . ($card['title'] !== '' ? ' – ' . $card['title'] : '')
+          : $card['title'];
+
+        $item = [
+          '@context' => 'https://schema.org',
+          '@type'    => 'Product',
+          'name'     => $name,
+        ];
+
+        if ($card['image_url'] !== '') {
+          $item['image'] = $card['image_url'];
+        }
+        if ($card['artno'] !== '') {
+          $item['sku'] = $card['artno'];
+        }
+        if ($card['ean'] !== '') {
+          $item['gtin13'] = $card['ean'];
+        }
+        if ($card['link'] !== '') {
+          $item['url'] = $card['link'];
+        }
+
+        $props = [];
+        $prop_map = [
+          'color_body'         => $labels['color_body'],
+          'color_canopy'       => $labels['color_canopy'],
+          'interior_color'     => $labels['interior_color'],
+          'energylabel'        => $labels['energieklasse'],
+          'energy_consumption' => $labels['energy_consumption'],
+          'weight'             => $labels['weight'],
+        ];
+        foreach ($prop_map as $key => $label) {
+          if ($card[$key] !== '') {
+            $props[] = ['@type' => 'PropertyValue', 'name' => $label, 'value' => $card[$key]];
+          }
+        }
+        if (! empty($props)) {
+          $item['additionalProperty'] = $props;
+        }
+
+        $schema_items[] = $item;
+      }
+
+      echo '<script type="application/ld+json">'
+        . wp_json_encode($schema_items, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)
+        . '</script>';
+    }
   }
 }

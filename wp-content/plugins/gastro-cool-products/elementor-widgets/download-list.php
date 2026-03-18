@@ -265,6 +265,50 @@ class Download_List_Widget extends Widget_Base
       </div>
 
     </div>
+
     <?php
+    // ── JSON-LD: DigitalDocument schema per download ──────────────────────
+    $schema_docs = [];
+    foreach ($this->groups() as [$prefix, $acf_name]) {
+      $items = [];
+      if (function_exists('get_field')) {
+        $raw = get_field($acf_name);
+        if (is_array($raw)) {
+          $items = $raw;
+        }
+      }
+      foreach ($items as $row) {
+        $title    = trim($row['title']    ?? '');
+        $file_url = $this->resolve_url($row, $acf_name);
+        if ($file_url === '') {
+          continue;
+        }
+
+        $doc = [
+          '@context' => 'https://schema.org',
+          '@type'    => 'DigitalDocument',
+          'name'     => $title !== '' ? $title : basename($file_url),
+          'url'      => $file_url,
+        ];
+
+        $lang = strtolower(trim($row['language'] ?? ''));
+        if ($lang !== '') {
+          $doc['inLanguage'] = $lang;
+        }
+
+        $file_type = strtolower(trim($row['file_type'] ?? ''));
+        if ($file_type === 'pdf') {
+          $doc['encodingFormat'] = 'application/pdf';
+        }
+
+        $schema_docs[] = $doc;
+      }
+    }
+
+    if (! empty($schema_docs)) {
+      echo '<script type="application/ld+json">'
+        . wp_json_encode($schema_docs, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)
+        . '</script>';
+    }
   }
 }

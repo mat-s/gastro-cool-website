@@ -295,6 +295,31 @@ class Product_Video_Widget extends Widget_Base
       </div><!-- .gc-product-video__card -->
 
     </div><!-- .gc-product-video -->
+
     <?php
+    // ── JSON-LD: VideoObject schema per video ─────────────────────────────
+    $schema_videos = [];
+    foreach ($videos as $video) {
+      if ($video['youtube_id'] === '') {
+        continue;
+      }
+      $domain    = $privacy ? 'www.youtube-nocookie.com' : 'www.youtube.com';
+      $embed_url = 'https://' . $domain . '/embed/' . rawurlencode($video['youtube_id']);
+      $name      = $video['title'] !== '' ? $video['title'] : (string) get_the_title();
+
+      $schema_videos[] = [
+        '@context'    => 'https://schema.org',
+        '@type'       => 'VideoObject',
+        'name'        => $name,
+        'description' => (string) get_the_title(),
+        'embedUrl'    => $embed_url,
+      ];
+    }
+
+    if (! empty($schema_videos)) {
+      echo '<script type="application/ld+json">'
+        . wp_json_encode($schema_videos, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)
+        . '</script>';
+    }
   }
 }

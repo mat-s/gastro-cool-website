@@ -304,6 +304,41 @@ class Energy_Card_Widget extends Widget_Base
       </div><!-- .gc-energy-card__card -->
 
     </div><!-- .gc-energy-card -->
+
     <?php
+    // ── JSON-LD: Product schema with energy additionalProperty ────────────
+    $schema_props = [];
+    foreach ($rows as $row) {
+      $label     = trim($row['label']    ?? '');
+      $acf_field = sanitize_key($row['acf_field'] ?? '');
+      $appendix  = trim($row['appendix'] ?? '');
+
+      if ($acf_field === '' || ! function_exists('get_field')) {
+        continue;
+      }
+
+      $value = $this->format_acf_value(get_field($acf_field));
+      if ($value === '') {
+        continue;
+      }
+
+      $schema_props[] = [
+        '@type' => 'PropertyValue',
+        'name'  => $label,
+        'value' => $value . ($appendix !== '' ? ' ' . $appendix : ''),
+      ];
+    }
+
+    if (! empty($schema_props)) {
+      $schema = [
+        '@context'           => 'https://schema.org',
+        '@type'              => 'Product',
+        'name'               => (string) get_the_title(),
+        'additionalProperty' => $schema_props,
+      ];
+      echo '<script type="application/ld+json">'
+        . wp_json_encode($schema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)
+        . '</script>';
+    }
   }
 }
