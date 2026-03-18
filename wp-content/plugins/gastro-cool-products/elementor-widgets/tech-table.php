@@ -359,7 +359,32 @@ class Tech_Table_Widget extends Widget_Base
 
       </div><!-- /.gc-tech-table__body -->
     </div><!-- /.gc-tech-table -->
+
     <?php
+    // ── JSON-LD: Product schema with tech specs as additionalProperty ─────
+    $schema_props = [];
+    foreach ($visible_rows as $row) {
+      if ($row['value'] === '') {
+        continue;
+      }
+      $schema_props[] = [
+        '@type' => 'PropertyValue',
+        'name'  => $row['label'],
+        'value' => $row['value'] . ($row['appendix'] !== '' ? ' ' . $row['appendix'] : ''),
+      ];
+    }
+
+    if (! empty($schema_props)) {
+      $schema = [
+        '@context'           => 'https://schema.org',
+        '@type'              => 'Product',
+        'name'               => (string) get_the_title(),
+        'additionalProperty' => $schema_props,
+      ];
+      echo '<script type="application/ld+json">'
+        . wp_json_encode($schema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)
+        . '</script>';
+    }
   }
 
   private function format_acf_value( $raw ): string {
