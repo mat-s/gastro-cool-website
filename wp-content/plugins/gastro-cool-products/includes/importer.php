@@ -73,7 +73,7 @@ const GCP_MODEL_PREFIX_SLUG = [
 ];
 
 // Separator used to split <category> into individual taxonomy terms
-const GCP_CATEGORY_SEPARATOR = ' ';
+const GCP_CATEGORY_SEPARATOR = '/';
 
 // Known English detail keywords to extract from source URL filenames
 const GCP_IMAGE_KNOWN_DETAILS = [
@@ -472,7 +472,8 @@ function gcp_extract_variants(SimpleXMLElement $item, int $post_id = 0){
           'type'            => (string)$opt->type,
           'value'           => (string)$opt->value,
           'ean'             => (string)$opt->ean,
-          'energylabel'     => (string)$opt->energylabel,
+          'energylabel'        => (string)$opt->energylabel,
+          'energy_consumption' => (string)$opt->energy_consumption,
           'link'            => esc_url_raw(trim((string)$opt->link)),
           'additional_info' => (string)$opt->additional_info,
           'image_link'      => $img_id > 0 ? $img_id : $img_url,
@@ -569,20 +570,7 @@ function gcp_import_process_item(SimpleXMLElement $item, $download_images, &$cou
   if ($category !== '') {
     $cat_parts = array_filter(array_map('trim', explode(GCP_CATEGORY_SEPARATOR, $category)));
     foreach ($cat_parts as $cat_part) {
-      // Skip path-style entries (e.g. "Gewerbekälte >")
-      if (str_contains($cat_part, '>') || str_contains($cat_part, '/')) continue;
       gcp_assign_simple_tax($post_id, 'product_category', $cat_part);
-    }
-  }
-
-  $product_type = trim(gcp_get_first($item,'product_type',$g));
-  if ($product_type!==''){
-    if (str_starts_with($product_type,'Produkte')){
-      $tid = gcp_upsert_term_path('product_category', $product_type);
-      if ($tid) wp_set_object_terms($post_id, [$tid], 'product_category', true);
-    } elseif (str_starts_with($product_type,'Industrie')){
-      $tid = gcp_upsert_term_path('industry', $product_type);
-      if ($tid) wp_set_object_terms($post_id, [$tid], 'industry', true);
     }
   }
 

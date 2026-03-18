@@ -28,6 +28,8 @@
     display: inline-flex;
     align-items: center;
     color: var(--e-global-color-primary, #1e3a5f);
+    fill: var(--e-global-color-primary, #1e3a5f);
+    opacity: 0.4;
 
     i, svg {
       font-size: 1.125rem;

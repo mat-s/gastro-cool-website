@@ -338,6 +338,7 @@ add_action('plugins_loaded', function () {
     require_once GCP_PLUGIN_DIR . 'elementor-widgets/energy-card.php';
     require_once GCP_PLUGIN_DIR . 'elementor-widgets/product-video.php';
     require_once GCP_PLUGIN_DIR . 'elementor-widgets/variant-picker.php';
+    require_once GCP_PLUGIN_DIR . 'elementor-widgets/use-cases.php';
     $widgets_manager->register( new \GCP\Elementor\Widgets\Inquiry_Button_Widget() );
     $widgets_manager->register( new \GCP\Elementor\Widgets\Inquiry_List_Widget() );
     $widgets_manager->register( new \GCP\Elementor\Widgets\Inquiry_Form_Widget() );
@@ -353,6 +354,7 @@ add_action('plugins_loaded', function () {
     $widgets_manager->register( new \GCP\Elementor\Widgets\Energy_Card_Widget() );
     $widgets_manager->register( new \GCP\Elementor\Widgets\Product_Video_Widget() );
     $widgets_manager->register( new \GCP\Elementor\Widgets\Variant_Picker_Widget() );
+    $widgets_manager->register( new \GCP\Elementor\Widgets\Use_Cases_Widget() );
   });
   // Register bundled plugin JS (all widget scripts concatenated)
   add_action('elementor/frontend/after_register_scripts', function() {

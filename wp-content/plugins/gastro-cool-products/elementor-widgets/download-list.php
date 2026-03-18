@@ -166,11 +166,6 @@ class Download_List_Widget extends Widget_Base
     <div class="gc-download-list__group">
 
       <div class="gc-download-list__group-heading">
-        <?php if (! empty($icon['value'])) : ?>
-          <span class="gc-download-list__group-icon" aria-hidden="true">
-            <?php \Elementor\Icons_Manager::render_icon($icon, ['aria-hidden' => 'true']); ?>
-          </span>
-        <?php endif; ?>
         <?php if ($heading !== '') : ?>
           <span class="gc-download-list__group-title"><?= esc_html($heading) ?></span>
         <?php endif; ?>
@@ -180,23 +175,53 @@ class Download_List_Widget extends Widget_Base
         <ul class="gc-download-list__files">
           <?php foreach ($items as $row) : ?>
             <?php
-            $title    = trim($row['title']    ?? '');
-            $file_url = $this->resolve_url($row, $acf_name);
+            $title     = trim($row['title']     ?? '');
+            $file_url  = $this->resolve_url($row, $acf_name);
+            $language  = strtoupper(trim($row['language']  ?? ''));
+            $file_type = strtoupper(trim($row['file_type'] ?? ''));
+            $file_size = trim($row['file_size'] ?? '');
 
             if ($file_url === '' && $title === '') {
               continue;
             }
+
+            $has_meta = ($language !== '' || $file_type !== '' || $file_size !== '');
             ?>
             <li class="gc-download-list__file">
-              <?php if ($file_url !== '') : ?>
-                <a class="gc-download-list__link" href="<?= esc_url($file_url) ?>" target="_blank" rel="noopener">
-                  <span class="gc-download-list__file-icon" aria-hidden="true"><i class="far fa-file"></i></span>
-                  <span class="gc-download-list__file-title"><?= esc_html($title !== '' ? $title : $file_url) ?></span>
-                </a>
-              <?php else : ?>
-                <span class="gc-download-list__file-icon" aria-hidden="true"><i class="far fa-file"></i></span>
-                <span class="gc-download-list__file-title"><?= esc_html($title) ?></span>
-              <?php endif; ?>
+              <span class="gc-download-list__file-body">
+                <?php if ($file_url !== '') : ?>
+                  <a class="gc-download-list__link" href="<?= esc_url($file_url) ?>" target="_blank" rel="noopener">
+                    <?php if (! empty($icon['value'])) : ?>
+                      <span class="gc-download-list__file-icon" aria-hidden="true">
+                        <?php \Elementor\Icons_Manager::render_icon($icon, ['aria-hidden' => 'true']); ?>
+                      </span>
+                    <?php endif; ?>
+                    <?= esc_html($title !== '' ? $title : $file_url) ?>
+                  </a>
+                <?php else : ?>
+                  <span class="gc-download-list__file-title">
+                    <?php if (! empty($icon['value'])) : ?>
+                      <span class="gc-download-list__file-icon" aria-hidden="true">
+                        <?php \Elementor\Icons_Manager::render_icon($icon, ['aria-hidden' => 'true']); ?>
+                      </span>
+                    <?php endif; ?>
+                    <?= esc_html($title) ?>
+                  </span>
+                <?php endif; ?>
+                <?php if ($has_meta) : ?>
+                  <span class="gc-download-list__file-meta">
+                    <?php if ($language !== '') : ?>
+                      <span class="gc-download-list__meta-lang"><?= esc_html($language) ?></span>
+                    <?php endif; ?>
+                    <?php if ($file_type !== '') : ?>
+                      <span class="gc-download-list__meta-type"><?= esc_html($file_type) ?></span>
+                    <?php endif; ?>
+                    <?php if ($file_size !== '') : ?>
+                      <span class="gc-download-list__meta-size"><?= esc_html($file_size) ?></span>
+                    <?php endif; ?>
+                  </span>
+                <?php endif; ?>
+              </span>
             </li>
           <?php endforeach; ?>
         </ul>

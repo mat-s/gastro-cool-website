@@ -125,61 +125,63 @@ class Product_Gallery_Widget extends Widget_Base
     $multi      = $total > 1;
     $widget_id  = $this->get_id();
 
-    // ── Markup ────────────────────────────────────────────────────────────
-    echo '<div class="gc-product-gallery" id="gc-gallery-' . esc_attr($widget_id) . '" data-gallery>';
+    $energy_button_html = function_exists('get_field') ? get_field('energy_button_html', $post_id) : '';
+    ?>
 
-    // Main image
-    echo '<div class="gc-product-gallery__main">';
-    echo '<img class="gc-product-gallery__main-img"'
-       . ' src="' . esc_url($images[0]['url']) . '"'
-       . ' alt="' . esc_attr($images[0]['alt']) . '"'
-       . ' loading="eager" />';
-    echo '</div>';
+    <div class="gc-product-gallery" id="gc-gallery-<?= esc_attr($widget_id) ?>" data-gallery>
 
-    if ($multi) {
-      // Thumbnails (Swiper)
-      echo '<div class="gc-product-gallery__thumbs swiper">';
-      echo '<div class="swiper-wrapper">';
-      foreach ($images as $i => $img) {
-        $active = $i === 0 ? ' gc-product-gallery__thumb--active' : '';
-        echo '<div class="swiper-slide">'
-           . '<button type="button"'
-           . ' class="gc-product-gallery__thumb' . $active . '"'
-           . ' data-src="' . esc_url($img['url']) . '"'
-           . ' data-alt="' . esc_attr($img['alt']) . '"'
-           . ' data-index="' . esc_attr($i) . '"'
-           . ' aria-label="' . esc_attr(sprintf(__('Bild %d von %d', 'gastro-cool-products'), $i + 1, $total)) . '">'
-           . '<img src="' . esc_url($img['url']) . '" alt="" loading="lazy" />'
-           . '</button>'
-           . '</div>';
-      }
-      echo '</div>';
+      <div class="gc-product-gallery__main">
+        <img class="gc-product-gallery__main-img"
+          src="<?= esc_url($images[0]['url']) ?>"
+          alt="<?= esc_attr($images[0]['alt']) ?>"
+          loading="eager" />
+        <?php if ($energy_button_html) : ?>
+          <div class="gc-product-gallery__energy-label">
+            <?= wp_kses_post($energy_button_html) ?>
+          </div>
+        <?php endif; ?>
+      </div>
 
-      // Navigation buttons with optional custom icons
-      echo '<div class="swiper-button-prev">';
-      if (! empty($settings['icon_prev']['value'])) {
-        Icons_Manager::render_icon($settings['icon_prev'], ['aria-hidden' => 'true']);
-      }
-      echo '</div>';
+      <?php if ($multi) : ?>
+        <div class="gc-product-gallery__thumbs swiper">
+          <div class="swiper-wrapper">
+            <?php foreach ($images as $i => $img) : ?>
+              <div class="swiper-slide">
+                <button type="button"
+                  class="gc-product-gallery__thumb<?= $i === 0 ? ' gc-product-gallery__thumb--active' : '' ?>"
+                  data-src="<?= esc_url($img['url']) ?>"
+                  data-alt="<?= esc_attr($img['alt']) ?>"
+                  data-index="<?= esc_attr($i) ?>"
+                  aria-label="<?= esc_attr(sprintf(__('Bild %d von %d', 'gastro-cool-products'), $i + 1, $total)) ?>">
+                  <img src="<?= esc_url($img['url']) ?>" alt="" loading="lazy" />
+                </button>
+              </div>
+            <?php endforeach; ?>
+          </div>
 
-      echo '<div class="swiper-button-next">';
-      if (! empty($settings['icon_next']['value'])) {
-        Icons_Manager::render_icon($settings['icon_next'], ['aria-hidden' => 'true']);
-      }
-      echo '</div>';
+          <div class="swiper-button-prev">
+            <?php if (! empty($settings['icon_prev']['value'])) : ?>
+              <?php Icons_Manager::render_icon($settings['icon_prev'], ['aria-hidden' => 'true']); ?>
+            <?php endif; ?>
+          </div>
+          <div class="swiper-button-next">
+            <?php if (! empty($settings['icon_next']['value'])) : ?>
+              <?php Icons_Manager::render_icon($settings['icon_next'], ['aria-hidden' => 'true']); ?>
+            <?php endif; ?>
+          </div>
+        </div>
 
-      echo '</div>';
+        <p class="gc-product-gallery__counter">
+          <span class="gc-product-gallery__counter-current">1</span>
+          /
+          <span class="gc-product-gallery__counter-total"><?= esc_html($total) ?></span>
+          &mdash;
+          <?= esc_html__('Weitere Ansichten verfügbar', 'gastro-cool-products') ?>
+        </p>
+      <?php endif; ?>
 
-      // Counter
-      echo '<p class="gc-product-gallery__counter">';
-      echo '<span class="gc-product-gallery__counter-current">1</span>'
-         . ' / '
-         . '<span class="gc-product-gallery__counter-total">' . esc_html($total) . '</span>'
-         . ' &mdash; '
-         . esc_html__('Weitere Ansichten verfügbar', 'gastro-cool-products');
-      echo '</p>';
-    }
+    </div>
 
-    echo '</div>';
+    <?php
   }
 }

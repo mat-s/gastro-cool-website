@@ -68,58 +68,11 @@ class Tech_Table_Widget extends Widget_Base
 
   protected function register_controls() {
 
-    // ── Darstellung ───────────────────────────────────────────────────────
+    // ── Inhalt (Titel + Zeilen) ────────────────────────────────────────────
     $this->start_controls_section(
-      'section_display',
+      'section_content',
       [
-        'label' => __('Darstellung', 'gastro-cool-products'),
-      ]
-    );
-
-    $this->add_control(
-      'show_divider',
-      [
-        'label'        => __('Trennlinie oben', 'gastro-cool-products'),
-        'type'         => Controls_Manager::SWITCHER,
-        'label_on'     => __('Ja', 'gastro-cool-products'),
-        'label_off'    => __('Nein', 'gastro-cool-products'),
-        'return_value' => 'yes',
-        'default'      => 'yes',
-      ]
-    );
-
-    $this->add_control(
-      'accordion',
-      [
-        'label'        => __('Akkordeon (ein-/ausklappbar)', 'gastro-cool-products'),
-        'type'         => Controls_Manager::SWITCHER,
-        'label_on'     => __('Ja', 'gastro-cool-products'),
-        'label_off'    => __('Nein', 'gastro-cool-products'),
-        'return_value' => 'yes',
-        'default'      => 'yes',
-      ]
-    );
-
-    $this->add_control(
-      'accordion_open',
-      [
-        'label'        => __('Standard: geöffnet', 'gastro-cool-products'),
-        'type'         => Controls_Manager::SWITCHER,
-        'label_on'     => __('Ja', 'gastro-cool-products'),
-        'label_off'    => __('Nein', 'gastro-cool-products'),
-        'return_value' => 'yes',
-        'default'      => 'yes',
-        'condition'    => ['accordion' => 'yes'],
-      ]
-    );
-
-    $this->end_controls_section();
-
-    // ── Titel ─────────────────────────────────────────────────────────────
-    $this->start_controls_section(
-      'section_title',
-      [
-        'label' => __('Titel', 'gastro-cool-products'),
+        'label' => __('Inhalt', 'gastro-cool-products'),
       ]
     );
 
@@ -153,13 +106,10 @@ class Tech_Table_Widget extends Widget_Base
       ]
     );
 
-    $this->end_controls_section();
-
-    // ── Zeilen ────────────────────────────────────────────────────────────
-    $this->start_controls_section(
-      'section_rows',
+    $this->add_control(
+      'title_divider',
       [
-        'label' => __('Zeilen', 'gastro-cool-products'),
+        'type' => Controls_Manager::DIVIDER,
       ]
     );
 
@@ -195,6 +145,18 @@ class Tech_Table_Widget extends Widget_Base
         'default'     => '',
         'placeholder' => __('z.B. mm, kg, °C', 'gastro-cool-products'),
         'label_block' => false,
+      ]
+    );
+
+    $repeater->add_control(
+      'hide_if_empty',
+      [
+        'label'        => __('Ausblenden wenn kein Wert', 'gastro-cool-products'),
+        'type'         => Controls_Manager::SWITCHER,
+        'label_on'     => __('Ja', 'gastro-cool-products'),
+        'label_off'    => __('Nein', 'gastro-cool-products'),
+        'return_value' => 'yes',
+        'default'      => '',
       ]
     );
 
@@ -241,6 +203,53 @@ class Tech_Table_Widget extends Widget_Base
     );
 
     $this->end_controls_section();
+
+    // ── Darstellung ───────────────────────────────────────────────────────
+    $this->start_controls_section(
+      'section_display',
+      [
+        'label' => __('Darstellung', 'gastro-cool-products'),
+      ]
+    );
+
+    $this->add_control(
+      'show_divider',
+      [
+        'label'        => __('Trennlinie oben', 'gastro-cool-products'),
+        'type'         => Controls_Manager::SWITCHER,
+        'label_on'     => __('Ja', 'gastro-cool-products'),
+        'label_off'    => __('Nein', 'gastro-cool-products'),
+        'return_value' => 'yes',
+        'default'      => 'yes',
+      ]
+    );
+
+    $this->add_control(
+      'accordion',
+      [
+        'label'        => __('Akkordeon (ein-/ausklappbar)', 'gastro-cool-products'),
+        'type'         => Controls_Manager::SWITCHER,
+        'label_on'     => __('Ja', 'gastro-cool-products'),
+        'label_off'    => __('Nein', 'gastro-cool-products'),
+        'return_value' => 'yes',
+        'default'      => 'yes',
+      ]
+    );
+
+    $this->add_control(
+      'accordion_open',
+      [
+        'label'        => __('Standard: geöffnet', 'gastro-cool-products'),
+        'type'         => Controls_Manager::SWITCHER,
+        'label_on'     => __('Ja', 'gastro-cool-products'),
+        'label_off'    => __('Nein', 'gastro-cool-products'),
+        'return_value' => 'yes',
+        'default'      => 'yes',
+        'condition'    => ['accordion' => 'yes'],
+      ]
+    );
+
+    $this->end_controls_section();
   }
 
   protected function render() {
@@ -269,6 +278,8 @@ class Tech_Table_Widget extends Widget_Base
       $label     = isset($row['label'])     ? trim($row['label'])             : '';
       $appendix  = isset($row['appendix'])  ? trim($row['appendix'])          : '';
 
+      $hide_if_empty = isset($row['hide_if_empty']) && $row['hide_if_empty'] === 'yes';
+
       $value = '';
       if ($acf_field && function_exists('get_field')) {
         $raw   = get_field($acf_field);
@@ -276,6 +287,10 @@ class Tech_Table_Widget extends Widget_Base
       }
 
       if ($value === '' && $label === '') {
+        continue;
+      }
+
+      if ($value === '' && $hide_if_empty) {
         continue;
       }
 
@@ -298,63 +313,53 @@ class Tech_Table_Widget extends Widget_Base
       $wrapper_classes .= $is_open ? ' is-open' : ' is-closed';
     }
 
-    echo '<div class="' . esc_attr($wrapper_classes) . '">';
+    ?>
+    <div class="<?php echo esc_attr($wrapper_classes); ?>">
 
-    if ($show_divider === 'yes') {
-      echo '<hr class="gc-tech-table__divider" aria-hidden="true">';
-    }
+      <?php if ($show_divider === 'yes') : ?>
+        <hr class="gc-tech-table__divider" aria-hidden="true">
+      <?php endif; ?>
 
-    // Title – plain element or toggle button
-    if ($title !== '') {
-      if ($is_accordion) {
-        echo '<button'
-          . ' class="gc-tech-table__toggle"'
-          . ' type="button"'
-          . ' aria-expanded="' . ($is_open ? 'true' : 'false') . '"'
-          . ' aria-controls="' . esc_attr($body_id) . '"'
-          . '>';
-        echo '<' . esc_attr($title_tag) . ' class="gc-tech-table__title">'
-          . esc_html($title)
-          . '</' . esc_attr($title_tag) . '>';
-        echo '<span class="gc-tech-table__chevron" aria-hidden="true">'
-          . '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>'
-          . '</span>';
-        echo '</button>';
-      } else {
-        echo '<' . esc_attr($title_tag) . ' class="gc-tech-table__title">'
-          . esc_html($title)
-          . '</' . esc_attr($title_tag) . '>';
-      }
-    }
+      <?php if ($title !== '') : ?>
+        <?php if ($is_accordion) : ?>
+          <button class="gc-tech-table__toggle" type="button"
+            aria-expanded="<?php echo $is_open ? 'true' : 'false'; ?>"
+            aria-controls="<?php echo esc_attr($body_id); ?>">
+            <<?php echo esc_attr($title_tag); ?> class="gc-tech-table__title"><?php echo esc_html($title); ?></<?php echo esc_attr($title_tag); ?>>
+            <span class="gc-tech-table__chevron" aria-hidden="true">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
+            </span>
+          </button>
+        <?php else : ?>
+          <<?php echo esc_attr($title_tag); ?> class="gc-tech-table__title"><?php echo esc_html($title); ?></<?php echo esc_attr($title_tag); ?>>
+        <?php endif; ?>
+      <?php endif; ?>
 
-    // Body (collapsible when accordion)
-    $body_attrs = ' class="gc-tech-table__body"';
-    if ($is_accordion) {
-      $body_attrs .= ' id="' . esc_attr($body_id) . '"';
-    }
+      <div class="gc-tech-table__body"<?php if ($is_accordion) : ?> id="<?php echo esc_attr($body_id); ?>"<?php endif; ?>>
 
-    echo '<div' . $body_attrs . '>';
+        <?php if (! empty($visible_rows)) : ?>
+          <dl class="gc-tech-table__rows">
+            <?php foreach ($visible_rows as $row) : ?>
+              <div class="gc-tech-table__row elementor-repeater-item-<?php echo esc_attr($row['id']); ?>">
+                <dt class="gc-tech-table__label"><?php echo esc_html($row['label']); ?></dt>
+                <dd class="gc-tech-table__value">
+                  <?php if ($row['value'] !== '') : ?>
+                    <?php echo esc_html($row['value']); ?>
+                    <?php if ($row['appendix'] !== '') : ?>
+                      <span class="gc-tech-table__appendix"> <?php echo esc_html($row['appendix']); ?></span>
+                    <?php endif; ?>
+                  <?php else : ?>
+                    <span class="gc-tech-table__empty" aria-label="<?php echo esc_attr__('Kein Wert', 'gastro-cool-products'); ?>">&ndash;</span>
+                  <?php endif; ?>
+                </dd>
+              </div>
+            <?php endforeach; ?>
+          </dl>
+        <?php endif; ?>
 
-    if (! empty($visible_rows)) {
-      echo '<dl class="gc-tech-table__rows">';
-
-      foreach ($visible_rows as $row) {
-        echo '<div class="gc-tech-table__row elementor-repeater-item-' . esc_attr($row['id']) . '">';
-        echo '<dt class="gc-tech-table__label">' . esc_html($row['label']) . '</dt>';
-        echo '<dd class="gc-tech-table__value">';
-        echo esc_html($row['value']);
-        if ($row['appendix'] !== '') {
-          echo '<span class="gc-tech-table__appendix"> ' . esc_html($row['appendix']) . '</span>';
-        }
-        echo '</dd>';
-        echo '</div>';
-      }
-
-      echo '</dl>';
-    }
-
-    echo '</div>'; // body
-    echo '</div>'; // wrapper
+      </div><!-- /.gc-tech-table__body -->
+    </div><!-- /.gc-tech-table -->
+    <?php
   }
 
   private function format_acf_value( $raw ): string {

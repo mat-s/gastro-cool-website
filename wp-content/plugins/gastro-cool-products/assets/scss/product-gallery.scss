@@ -11,6 +11,7 @@ $border-active: var(--e-global-color-primary, #1d4ed8);
 
   // ── Hauptbild ─────────────────────────────────────────────────────────
   &__main {
+    position: relative;
     background: #fff;
     border-radius: $radius-main;
     overflow: hidden;
@@ -67,6 +68,22 @@ $border-active: var(--e-global-color-primary, #1d4ed8);
     }
   }
 
+  // ── Energy label button overlay ───────────────────────────────────────
+  &__energy-label {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 2;
+    max-width: 70px;
+
+    img {
+      display: block;
+      width: 100%;
+      height: auto;
+      box-shadow: none !important;
+    }
+  }
+
   // ── Counter ───────────────────────────────────────────────────────────
   &__counter {
     margin: 0;
@@ -117,13 +134,13 @@ $border-active: var(--e-global-color-primary, #1d4ed8);
 
   .swiper-button-prev,
   .swiper-rtl .swiper-button-next {
-    left: 10px;
+    left: 0;
     right: auto;
   }
 
   .swiper-button-next,
   .swiper-rtl .swiper-button-prev {
-    right: 10px;
+    right: 0;
     left: auto;
   }
 
@@ -158,6 +175,7 @@ $border-active: var(--e-global-color-primary, #1d4ed8);
     border: 1px solid #e5e7eb;
     border-radius: 50%;
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+    transform: translateY(-50%);
 
     &::after {
       font-size: 12px;
