@@ -1538,7 +1538,7 @@ body.gc-inquiry-overlay-open {
 }
 .gc-variant-picker__image-wrap {
   position: relative;
-  background: #f3f4f6;
+  background: #FFFFFF;
   aspect-ratio: 4/3;
   display: flex;
   align-items: center;

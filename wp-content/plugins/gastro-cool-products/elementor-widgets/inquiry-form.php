@@ -306,10 +306,18 @@ class Inquiry_Form_Widget extends Widget_Base
           }
           ?>
           <div class="gc-inquiry-form__field gc-inquiry-form__field--<?php echo esc_attr($width); ?>">
+            <?php if (in_array($type, ['radio', 'checkbox'], true)) : ?>
+            <fieldset class="gc-inquiry-form__fieldset">
+            <legend class="gc-inquiry-form__label">
+              <?php echo esc_html($label); ?>
+              <?php if ($required) : ?><span class="gc-inquiry-form__required">*</span><?php endif; ?>
+            </legend>
+            <?php else : ?>
             <label class="gc-inquiry-form__label" for="<?php echo $input_id; ?>">
               <?php echo esc_html($label); ?>
               <?php if ($required) : ?><span class="gc-inquiry-form__required">*</span><?php endif; ?>
             </label>
+            <?php endif; ?>
             <?php if ($type === 'textarea') : ?>
               <textarea
                 class="gc-inquiry-form__input"
@@ -354,6 +362,7 @@ class Inquiry_Form_Widget extends Widget_Base
                   </div>
                 <?php endif; ?>
               <?php endif; ?>
+            </fieldset>
             <?php elseif ($type === 'checkbox') : ?>
               <?php if (! empty($options)) : ?>
                 <div class="gc-inquiry-form__choices">
@@ -373,6 +382,7 @@ class Inquiry_Form_Widget extends Widget_Base
                   <?php endforeach; ?>
                 </div>
               <?php endif; ?>
+            </fieldset>
             <?php else : ?>
               <input
                 class="gc-inquiry-form__input"

@@ -123,7 +123,7 @@ class Inquiry_Button_Widget extends Widget_Base
     }
 
     if ($show_counter) {
-      echo '<span class="gc-inquiry-button__badge"><span class="gc-inquiry-badge" data-gc-inquiry-count>0</span></span>';
+      echo '<span class="gc-inquiry-button__badge"><span class="gc-inquiry-badge" data-gc-inquiry-count aria-live="polite" aria-atomic="true">0</span></span>';
     }
 
     echo '</button>';

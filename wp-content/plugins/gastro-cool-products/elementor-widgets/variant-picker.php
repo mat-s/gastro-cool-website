@@ -235,7 +235,7 @@ class Variant_Picker_Widget extends Widget_Base
           $tag  = $card['link'] !== '' ? 'a' : 'div';
           $attr = $tag === 'a'
             ? ' href="' . esc_url($card['link']) . '" class="gc-variant-picker__card"'
-            : ' class="gc-variant-picker__card"';
+            : ' class="gc-variant-picker__card" role="button" tabindex="0"';
           ?>
           <<?= $tag . $attr ?>>
 

@@ -254,7 +254,9 @@ class Product_Video_Widget extends Widget_Base
                 class="gc-product-video__tab<?php echo $index === 0 ? ' is-active' : ''; ?>"
                 type="button"
                 role="tab"
+                id="gc-video-tab-<?php echo esc_attr($index); ?>"
                 aria-selected="<?php echo $index === 0 ? 'true' : 'false'; ?>"
+                aria-controls="gc-video-panel-<?php echo esc_attr($index); ?>"
                 data-index="<?php echo esc_attr($index); ?>"
               ><?php echo esc_html($tab_label); ?></button>
             <?php endforeach; ?>
@@ -267,7 +269,15 @@ class Product_Video_Widget extends Widget_Base
             $panel_class .= $index === 0 ? ' is-active' : ' is-hidden';
           }
         ?>
-          <div class="<?php echo esc_attr($panel_class); ?>" data-index="<?php echo esc_attr($index); ?>">
+          <div
+            class="<?php echo esc_attr($panel_class); ?>"
+            data-index="<?php echo esc_attr($index); ?>"
+            <?php if ($has_multiple) : ?>
+            role="tabpanel"
+            id="gc-video-panel-<?php echo esc_attr($index); ?>"
+            aria-labelledby="gc-video-tab-<?php echo esc_attr($index); ?>"
+            <?php endif; ?>
+          >
 
             <?php if ($video['youtube_id'] !== '') : ?>
               <?php $this->render_youtube($video['youtube_id'], $privacy, $video['title']); ?>
