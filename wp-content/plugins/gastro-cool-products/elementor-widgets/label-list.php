@@ -124,7 +124,7 @@ class Label_List_Widget extends Widget_Base
       return;
     }
 
-    echo '<div class="gc-labels">';
+    echo '<ul class="gc-labels">';
 
     foreach ($items as $item) {
       $label   = isset($item['label']) ? $item['label'] : '';
@@ -141,6 +141,8 @@ class Label_List_Widget extends Widget_Base
         $classes .= ' gc-label--highlight';
       }
 
+      echo '<li class="gc-labels__item">';
+
       if ($link) {
         $target   = ! empty($item['link']['is_external']) ? ' target="_blank"' : '';
         $nofollow = ! empty($item['link']['nofollow']) ? ' rel="nofollow"' : '';
@@ -156,8 +158,10 @@ class Label_List_Widget extends Widget_Base
       echo '<span class="gc-label__value">' . esc_html($value) . '</span>';
 
       echo $link ? '</a>' : '</span>';
+
+      echo '</li>';
     }
 
-    echo '</div>';
+    echo '</ul>';
   }
 }

@@ -362,7 +362,6 @@ class Inquiry_Form_Widget extends Widget_Base
                   </div>
                 <?php endif; ?>
               <?php endif; ?>
-            </fieldset>
             <?php elseif ($type === 'checkbox') : ?>
               <?php if (! empty($options)) : ?>
                 <div class="gc-inquiry-form__choices">
@@ -382,7 +381,6 @@ class Inquiry_Form_Widget extends Widget_Base
                   <?php endforeach; ?>
                 </div>
               <?php endif; ?>
-            </fieldset>
             <?php else : ?>
               <input
                 class="gc-inquiry-form__input"
@@ -392,6 +390,9 @@ class Inquiry_Form_Widget extends Widget_Base
                 placeholder="<?php echo esc_attr($placeholder); ?>"
                 <?php echo $required ? 'required' : ''; ?>
               />
+            <?php endif; ?>
+            <?php if (in_array($type, ['radio', 'checkbox'], true)) : ?>
+            </fieldset>
             <?php endif; ?>
           </div>
         <?php endforeach; ?>

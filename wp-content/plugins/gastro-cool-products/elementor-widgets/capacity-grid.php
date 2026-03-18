@@ -273,7 +273,7 @@ class Capacity_Grid_Widget extends Widget_Base
 
       <?php $this->render_row($cans); ?>
 
-      <hr class="gc-capacity-grid__separator">
+      <hr class="gc-capacity-grid__separator" aria-hidden="true">
 
       <?php $this->render_row($bottles); ?>
 

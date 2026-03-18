@@ -125,7 +125,7 @@ class Spec_List_Widget extends Widget_Base
       return;
     }
 
-    echo '<div class="gc-spec-list">';
+    echo '<ul class="gc-spec-list">';
 
     foreach ($items as $item) {
       $label   = isset($item['label'])   ? trim($item['label'])   : '';
@@ -137,7 +137,7 @@ class Spec_List_Widget extends Widget_Base
         continue;
       }
 
-      echo '<div class="gc-spec-item elementor-repeater-item-' . esc_attr($item['_id']) . '">';
+      echo '<li class="gc-spec-item elementor-repeater-item-' . esc_attr($item['_id']) . '">';
 
       if (! empty($icon['value'])) {
         echo '<span class="gc-spec-item__icon">';
@@ -162,9 +162,9 @@ class Spec_List_Widget extends Widget_Base
 
       echo '</div>';
 
-      echo '</div>';
+      echo '</li>';
     }
 
-    echo '</div>';
+    echo '</ul>';
   }
 }

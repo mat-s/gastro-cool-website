@@ -7,6 +7,8 @@ $bp-mobile: 767px;
   grid-template-columns: 2fr 1fr 2fr 1fr;
   gap: 24px;
   margin: 0.4rem 0;
+  list-style: none;
+  padding: 0;
 
   // Tablet: 2 gleichbreite Spalten
   @media (max-width: $bp-tablet) {

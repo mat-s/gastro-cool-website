@@ -135,7 +135,7 @@ class Use_Cases_Widget extends Widget_Base
       <?php endif; ?>
 
       <?php if (! empty($items)) : ?>
-        <div class="gc-use-cases__grid">
+        <ul class="gc-use-cases__grid">
           <?php foreach ($items as $row) : ?>
             <?php
             $text = trim(is_array($row) ? ($row['text'] ?? '') : (string) $row);
@@ -143,14 +143,14 @@ class Use_Cases_Widget extends Widget_Base
               continue;
             }
             ?>
-            <div class="gc-use-cases__card">
+            <li class="gc-use-cases__card">
               <span class="gc-use-cases__card-icon" aria-hidden="true">
                 <?php \Elementor\Icons_Manager::render_icon(['value' => 'fas fa-circle-dot', 'library' => 'fa-solid'], ['aria-hidden' => 'true']); ?>
               </span>
               <p class="gc-use-cases__card-text"><?= esc_html($text) ?></p>
-            </div>
+            </li>
           <?php endforeach; ?>
-        </div>
+        </ul>
       <?php else : ?>
         <p class="gc-use-cases__empty"><?= esc_html($empty_text) ?></p>
       <?php endif; ?>

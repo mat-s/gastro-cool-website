@@ -598,6 +598,10 @@ body.gc-inquiry-overlay-open {
   align-items: center;
   margin: 0.4rem 0;
   padding: 0;
+  list-style: none;
+}
+.gc-labels__item {
+  display: contents;
 }
 
 .gc-label {
@@ -683,6 +687,8 @@ body.gc-inquiry-overlay-open {
   grid-template-columns: 2fr 1fr 2fr 1fr;
   gap: 24px;
   margin: 0.4rem 0;
+  list-style: none;
+  padding: 0;
 }
 @media (max-width: 1024px) {
   .gc-spec-list {
@@ -1669,6 +1675,9 @@ body.gc-inquiry-overlay-open {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 14px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
 }
 .gc-use-cases__card {
   display: flex;
