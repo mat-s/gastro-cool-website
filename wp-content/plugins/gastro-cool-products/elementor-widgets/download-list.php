@@ -190,7 +190,8 @@ class Download_List_Widget extends Widget_Base
             <li class="gc-download-list__file">
               <span class="gc-download-list__file-body">
                 <?php if ($file_url !== '') : ?>
-                  <a class="gc-download-list__link" href="<?= esc_url($file_url) ?>" target="_blank" rel="noopener">
+                  <a class="gc-download-list__link" href="<?= esc_url($file_url) ?>" target="_blank" rel="noopener"
+                    aria-label="<?= esc_attr(($title !== '' ? $title : $file_url) . ' – ' . __('öffnet in neuem Tab', 'gastro-cool-products')) ?>">
                     <?php if (! empty($icon['value'])) : ?>
                       <span class="gc-download-list__file-icon" aria-hidden="true">
                         <?php \Elementor\Icons_Manager::render_icon($icon, ['aria-hidden' => 'true']); ?>

@@ -94,7 +94,7 @@ class Inquiry_List_Widget extends Widget_Base
       </div>
       <div class="gc-inquiry-list__body">
         <div class="gc-inquiry-list__empty" data-gc-inquiry-empty><?php echo esc_html($empty_text); ?></div>
-        <ul class="gc-inquiry-list__items" data-gc-inquiry-items></ul>
+        <ul class="gc-inquiry-list__items" data-gc-inquiry-items aria-live="polite" aria-relevant="additions removals"></ul>
       </div>
     </div>
     <?php
